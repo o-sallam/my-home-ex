@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Custom Home",
+  "version": "1.0",
+  "description": "Custom new tab page",
+  "permissions": ["history"],
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  }
+}

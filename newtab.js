@@ -95,8 +95,9 @@ function renderCards() {
     let hostname = '';
     try { hostname = new URL(card.url).hostname.replace(/^www\./, ''); } catch {}
 
-    const el = document.createElement('div');
+    const el = document.createElement('a');
     el.className = 'card';
+    el.href = card.url;
     el.draggable = true;
     el.innerHTML =
       '<i class="card-icon ' + card.icon + '" style="color:' + card.color + '"></i>' +
@@ -104,9 +105,11 @@ function renderCards() {
       '<span class="card-url">' + hostname + '</span>' +
       '<div class="edit-hint"><i class="fas fa-pen"></i></div>';
 
-    el.addEventListener('click', () => {
-      if (editMode) openModal(i);
-      else window.location.href = card.url;
+    el.addEventListener('click', (e) => {
+      if (editMode) {
+        e.preventDefault();
+        openModal(i);
+      }
     });
 
     // ── Drag to reorder ──
@@ -203,6 +206,14 @@ document.getElementById('btnSave').addEventListener('click', () => {
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeModal();
+  
+  // Keyboard shortcuts 1-9 to open cards
+  const num = parseInt(e.key);
+  if (num >= 1 && num <= 9 && cards[num - 1] && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    const target = e.target;
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+    window.location.href = cards[num - 1].url;
+  }
 });
 
 setView(viewMode);

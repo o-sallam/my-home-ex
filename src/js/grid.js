@@ -25,6 +25,7 @@ export function createGrid({ element, onEdit, onMove }) {
       const cell = document.createElement(card && !editing && url ? 'a' : 'button');
       cell.className = `cell ${card ? 'shortcut' : 'empty-cell'}`;
       cell.dataset.index = i;
+      cell.style.setProperty('--i', Math.floor(i / columns) + (i % columns));
       if (cell.tagName === 'A') cell.href = url;
       else cell.type = 'button';
       const name = card ? String(card.label || 'Untitled shortcut') : 'Add shortcut';

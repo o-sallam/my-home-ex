@@ -97,6 +97,8 @@ async function start() {
   home.setAttribute('aria-busy', 'false');
 }
 
+setTimeout(() => document.body.classList.remove('intro'), 3600);
+
 start().catch((error) => {
   home.setAttribute('aria-busy', 'false');
   const message = document.createElement('p');

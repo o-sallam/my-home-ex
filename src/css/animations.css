@@ -16,6 +16,20 @@
 @keyframes dialog-out { to { opacity: 0; transform: translateY(6px) scale(.985); } }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes fade-out { to { opacity: 0; } }
+/* Intro: only the icon, centered; then the page is revealed */
+.splash { position: fixed; inset: 0; z-index: 10; display: none; align-items: center; justify-content: center; background: var(--background); pointer-events: none; }
+body.intro .splash { display: flex; animation: splash-out 520ms cubic-bezier(.6, 0, .4, 1) 1500ms forwards; }
+.splash svg { overflow: visible; animation: splash-glow 1400ms ease-out 200ms both; }
+.sq { transform-box: fill-box; transform-origin: center; animation: sq-in 560ms var(--ease) both; }
+.sq1 { animation-delay: 150ms; } .sq2 { animation-delay: 260ms; } .sq4 { animation-delay: 370ms; } .sq3 { animation-delay: 480ms; }
+body.intro .page-header, body.intro .page-footer, body.intro .toolbar, body.intro .workspace-footer { animation: rise 600ms var(--ease) 1700ms both; }
+body.intro .grid .cell { animation: cell-reveal 640ms var(--ease) both; animation-delay: calc(1750ms + var(--i, 0) * 55ms); }
+@keyframes sq-in { from { opacity: 0; transform: scale(.2) rotate(-25deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
+@keyframes splash-glow { 0%, 100% { filter: drop-shadow(0 0 0 #3794ff00); } 50% { filter: drop-shadow(0 0 18px #3794ff66); } }
+@keyframes splash-out { 0% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes cell-reveal { from { opacity: 0; transform: translateY(18px) scale(.82); filter: blur(6px); } to { opacity: 1; transform: none; filter: blur(0); } }
+@media (prefers-reduced-motion: reduce) { body.intro .splash { display: none; } }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   .cell:hover, .cell:active, .catalog-item:hover, .button:active, .catalog-item:active { transform: none; }

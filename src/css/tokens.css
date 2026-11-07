@@ -1,11 +1,13 @@
+/* VS Code "Dark+" palette */
 :root {
-  --background: #1e1f22;
-  --surface: #2a2d32;
-  --surface-hover: #32363d;
-  --foreground: #e4e7ed;
-  --muted: #9ba2ae;
-  --border: #393d45;
-  --blue: #75baff;
-  --blue-soft: #449be515;
+  --background: #1e1e1e;
+  --surface: #252526;
+  --surface-hover: #2a2d2e;
+  --foreground: #cccccc;
+  --muted: #9d9d9d;
+  --border: #3c3c3c;
+  --blue: #3794ff;
+  --blue-soft: #007acc22;
+  --focus: #007fd4;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }

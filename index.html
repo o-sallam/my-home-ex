@@ -18,20 +18,17 @@
     </header>
 
     <main id="home" class="home" aria-busy="true">
-      <section class="workspace" aria-labelledby="page-title">
-        <div class="workspace-heading">
-          <div><p class="eyebrow">YOUR DAILY STARTING POINT</p><h1 id="page-title">Quick links<span class="title-dot">.</span></h1><p class="intro">A familiar place to start.</p></div>
-          <div class="toolbar">
-            <div class="view-switch" role="group" aria-label="Shortcut view">
-              <button id="view-grid" class="icon-button" aria-label="Grid view" aria-pressed="true" title="Grid view"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></button>
-              <button id="view-list" class="icon-button" aria-label="List view" aria-pressed="false" title="List view"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M8 5h13M8 12h13M8 19h13M3 5h.01M3 12h.01M3 19h.01"/></svg></button>
-            </div>
-            <button id="edit-toggle" class="button secondary" aria-pressed="false">Edit shortcuts</button>
+      <section class="workspace" aria-label="Homepage shortcuts">
+        <div class="toolbar">
+          <div class="view-switch" role="group" aria-label="Shortcut view">
+            <button id="view-grid" class="icon-button" aria-label="Grid view" aria-pressed="true" title="Grid view"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></button>
+            <button id="view-list" class="icon-button" aria-label="List view" aria-pressed="false" title="List view"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M8 5h13M8 12h13M8 19h13M3 5h.01M3 12h.01M3 19h.01"/></svg></button>
           </div>
+          <button id="edit-toggle" class="button secondary" aria-pressed="false">Edit mode</button>
         </div>
         <p id="edit-help" class="edit-help" hidden>Choose a shortcut to edit. Drag to reorder, or focus a cell and use Alt + arrow keys.</p>
         <div id="grid" class="grid" aria-label="Shortcuts"></div>
-        <div class="workspace-footer"><p id="keyboard-hint"><kbd>1</kbd>–<kbd>9</kbd><span> to open a shortcut</span></p><span id="grid-summary">3 × 3 grid</span></div>
+        <div class="workspace-footer"><p id="keyboard-hint"><kbd>1</kbd>–<kbd>9</kbd><span> to open · </span><kbd>Shift</kbd><span> for a new tab</span></p><span id="grid-summary">3 × 3 grid</span></div>
       </section>
     </main>
     <footer class="page-footer"><span class="status-dot" aria-hidden="true"></span> A space of your own.</footer>

@@ -157,6 +157,7 @@ test('all layouts fit narrow windows and reduced motion is respected', async ({ 
     const boxes = await page.locator('#grid .cell').evaluateAll((cells) => cells.map((c) => ({ w: c.offsetWidth, h: c.offsetHeight })));
     expect(new Set(boxes.map((box) => box.w)).size).toBeLessThanOrEqual(2);
     expect(new Set(boxes.map((box) => box.h)).size).toBe(1);
+    expect(boxes.every((box) => Math.abs(box.w - box.h) <= 1)).toBe(true);
   }
   await page.getByRole('button', { name: 'Add shortcut to cell 25', exact: true }).click();
   expect(await page.locator('#shortcut-dialog').evaluate((dialog) => dialog.scrollWidth <= dialog.clientWidth)).toBe(true);
@@ -180,4 +181,41 @@ test('numeric navigation works outside dialogs', async ({ page }) => {
   await page.locator('body').click({ position: { x: 5, y: 5 } });
   await page.keyboard.press('1');
   await expect(page).toHaveURL('https://discord.com/app');
+});
+
+test('Shift plus a digit opens a new tab and keeps the homepage open', async ({ page, context }) => {
+  await context.route('https://discord.com/**', (route) => route.fulfill({ body: 'Destination reached' }));
+  await ready(page);
+  const homepageUrl = page.url();
+  await page.locator('body').click({ position: { x: 5, y: 5 } });
+  const newTab = context.waitForEvent('page');
+  await page.keyboard.press('Shift+Digit1');
+  const destination = await newTab;
+  await expect(destination).toHaveURL('https://discord.com/app');
+  await expect(destination.locator('body')).toContainText('Destination reached');
+  expect(await destination.evaluate(() => window.opener === null)).toBe(true);
+  await expect(page).toHaveURL(homepageUrl);
+});
+
+test('edit mode remains available and pauses numeric navigation', async ({ page }) => {
+  await ready(page);
+  const homepageUrl = page.url();
+  const opened = [];
+  await page.exposeFunction('recordOpenedTab', (url) => opened.push(url));
+  await page.evaluate(() => { window.open = (url) => { window.recordOpenedTab(url); return null; }; });
+  await page.getByRole('button', { name: 'Edit mode', exact: true }).click();
+  await expect(page.locator('#grid')).toHaveClass(/editing/);
+  await expect(page.locator('#edit-help')).toBeVisible();
+  await page.keyboard.press('Digit1');
+  await page.keyboard.press('Shift+Digit1');
+  await expect(page).toHaveURL(homepageUrl);
+  expect(opened).toEqual([]);
+  await page.getByRole('button', { name: 'Edit Discord, cell 1', exact: true }).click();
+  await expect(page.locator('#shortcut-dialog')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#shortcut-dialog')).not.toBeVisible();
+  await page.getByRole('button', { name: 'Done editing', exact: true }).click();
+  await expect(page.locator('#grid')).not.toHaveClass(/editing/);
+  await page.keyboard.press('Shift+Digit1');
+  await expect.poll(() => opened).toEqual(['https://discord.com/app']);
 });

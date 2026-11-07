@@ -58,7 +58,7 @@ async function start() {
     grid.render(state, editMode);
     document.querySelector('.workspace').style.setProperty('--columns', state.settings.gridSize);
     document.querySelector('#edit-toggle').setAttribute('aria-pressed', editMode);
-    document.querySelector('#edit-toggle').textContent = editMode ? 'Done editing' : 'Edit shortcuts';
+    document.querySelector('#edit-toggle').textContent = editMode ? 'Done editing' : 'Edit mode';
     document.querySelector('#edit-help').hidden = !editMode;
     document.querySelector('#keyboard-hint').hidden = editMode;
     for (const view of ['grid', 'list']) {
@@ -73,10 +73,18 @@ async function start() {
     document.querySelector(`#view-${view}`).addEventListener('click', () => update((next) => { next.settings.view = view; }));
   }
   document.addEventListener('keydown', (event) => {
-    if (editMode || document.querySelector('dialog[open]') || event.repeat || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey || !/^[1-9]$/.test(event.key)) return;
-    if (event.target.closest('input, textarea, select, [contenteditable]')) return;
-    const url = websiteUrl(state.cards[Number(event.key) - 1]?.url);
-    if (url) window.location.assign(url);
+    if (editMode || document.querySelector('dialog[open]') || event.defaultPrevented || event.repeat || event.ctrlKey || event.metaKey || event.altKey) return;
+    if (event.target.closest?.('input, textarea, select, [contenteditable]')) return;
+    // Shift + 1 usually reports "!" as the key. Use its physical digit code
+    // for shifted shortcuts, including the numeric keypad.
+    const number = /^[1-9]$/.test(event.key) ? event.key
+      : event.shiftKey && /^(Digit|Numpad)[1-9]$/.test(event.code) ? event.code.slice(-1) : null;
+    if (number === null) return;
+    const url = websiteUrl(state.cards[Number(number) - 1]?.url);
+    if (!url) return;
+    event.preventDefault();
+    if (event.shiftKey) window.open(url, '_blank', 'noopener,noreferrer');
+    else window.location.assign(url);
   });
 
   render();

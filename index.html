@@ -14,27 +14,24 @@
     </div>
     <header class="page-header">
       <div class="wordmark"><img src="/assets/home.svg" alt="" width="28" height="28"><span>Custom <strong>Home</strong></span></div>
-      <button id="settings-open" class="button subtle" aria-haspopup="dialog">
-        <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m9 3-1 3-3 1-2 3 2 2-1 3 3 2 3-1 2 2 3-1 1-3 3-1 2-3-2-2 1-3-3-2-3 1-2-2Z"/><circle cx="12" cy="11" r="3"/></svg>
-        <span>Settings</span>
+      <div class="header-actions">
+          <div class="view-switch" role="group" aria-label="Shortcut view">
+            <button id="view-grid" class="icon-button" aria-label="Grid view" aria-pressed="true" title="Grid view"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></button>
+            <button id="view-list" class="icon-button" aria-label="List view" aria-pressed="false" title="List view"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h.01M3 12h.01M3 18h.01M8 6h13M8 12h13M8 18h13"/></svg></button>
+          </div>
+          <button id="edit-toggle" class="button secondary edit-toggle" aria-label="Edit mode" aria-pressed="false" title="Edit mode"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>
+        <button id="settings-open" class="button subtle settings-button" aria-haspopup="dialog" aria-label="Settings" title="Settings">
+        <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"/></svg>
       </button>
+      </div>
     </header>
 
     <main id="home" class="home" aria-busy="true">
       <section class="workspace" aria-label="Homepage shortcuts">
-        <div class="toolbar">
-          <div class="view-switch" role="group" aria-label="Shortcut view">
-            <button id="view-grid" class="icon-button" aria-label="Grid view" aria-pressed="true" title="Grid view"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></button>
-            <button id="view-list" class="icon-button" aria-label="List view" aria-pressed="false" title="List view"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M8 5h13M8 12h13M8 19h13M3 5h.01M3 12h.01M3 19h.01"/></svg></button>
-          </div>
-          <button id="edit-toggle" class="button secondary edit-toggle" aria-label="Edit mode" aria-pressed="false" title="Edit mode"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 3 5 5-12 12-6 1 1-6L16 3ZM14 5l5 5"/></svg></button>
-        </div>
-        <p id="edit-help" class="edit-help" hidden>Choose a shortcut to edit. Drag to reorder, or focus a cell and use Alt + arrow keys.</p>
         <div id="grid" class="grid" aria-label="Shortcuts"></div>
-        <div class="workspace-footer"><p id="keyboard-hint"><kbd>1</kbd>–<kbd>9</kbd><span> to open · </span><kbd>Shift</kbd><span> for a new tab</span></p><span id="grid-summary">3 × 3 grid</span></div>
       </section>
     </main>
-    <footer class="page-footer"><span class="status-dot" aria-hidden="true"></span> A space of your own.</footer>
+    <footer class="page-footer"><div class="footer-left"><p id="edit-help" class="edit-help" hidden>Choose a shortcut to edit. Drag to reorder, or focus a cell and use Alt + arrow keys.</p><p id="keyboard-hint"><kbd>1</kbd>–<kbd>9</kbd><span> to open · </span><kbd>Shift</kbd><span> for a new tab</span></p></div><span id="grid-summary">3 × 3 grid</span></footer>
 
     <dialog id="settings-dialog" class="dialog settings-dialog" aria-labelledby="settings-title">
       <div class="dialog-heading"><div><p class="eyebrow">MAKE IT YOURS</p><h2 id="settings-title">Homepage settings</h2></div><button class="icon-button close-dialog" aria-label="Close settings">×</button></div>
@@ -63,6 +60,7 @@
       <p id="shortcut-error" class="form-error" role="alert" hidden></p>
       <div id="remove-row" class="remove-row" hidden><span>Or leave this cell empty.</span><button id="remove-shortcut" class="button danger">Remove shortcut</button></div>
     </dialog>
+    <div id="context-menu" class="context-menu" role="menu" aria-label="Page actions" hidden></div>
     <p id="notice" class="notice" role="status" hidden></p>
     <noscript><p class="fatal-error">Enable JavaScript to use your shortcuts.</p></noscript>
     <script type="module" src="/src/js/main.js"></script>

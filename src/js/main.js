@@ -5,6 +5,7 @@ import { createGrid } from './grid.js';
 import { setupSettings } from './settings.js';
 import { setupShortcuts } from './shortcuts.js';
 import { websiteUrl } from './urls.js';
+import { setupContextMenu } from './contextmenu.js';
 
 const home = document.querySelector('#home');
 const notice = document.querySelector('#notice');
@@ -64,7 +65,7 @@ async function start() {
     editToggle.title = editLabel;
     editToggle.querySelector('path').setAttribute('d', editMode
       ? 'm5 12 4 4L19 6'
-      : 'm16 3 5 5-12 12-6 1 1-6L16 3ZM14 5l5 5');
+      : 'M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z');
     document.querySelector('#edit-help').hidden = !editMode;
     document.querySelector('#keyboard-hint').hidden = editMode;
     for (const view of ['grid', 'list']) {
@@ -91,6 +92,18 @@ async function start() {
     event.preventDefault();
     if (event.shiftKey) window.open(url, '_blank', 'noopener,noreferrer');
     else window.location.assign(url);
+  });
+
+  setupContextMenu({
+    getState,
+    isEditing: () => editMode,
+    toggleEdit: () => { editMode = !editMode; render(); },
+    setView: (view) => update((next) => { next.settings.view = view; }),
+    setGridSize: (size) => update((next) => { next.settings.gridSize = size; }),
+    openShortcut: shortcuts.open,
+    removeShortcut: (index) => update((next) => { next.cards[index] = null; }),
+    openSettings: () => document.querySelector('#settings-open').click(),
+    notify,
   });
 
   render();

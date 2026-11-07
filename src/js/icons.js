@@ -17,19 +17,9 @@ export function createIcon(card) {
   const file = Object.hasOwn(iconFiles, card.icon || '') ? iconFiles[card.icon] : null;
   if (image || file) {
     const src = image || `${import.meta.env.BASE_URL}assets/icons/${file}`;
-    if (!image && /^(fab|fas|far) /.test(card.icon)) {
-      // Preserve the exact user-selected color of legacy Font Awesome icons.
-      holder.classList.add('legacy-icon');
-      holder.style.maskImage = `url("${src}")`;
-    } else {
-      const img = document.createElement('img');
-      img.src = src;
-      img.alt = '';
-      img.width = 34;
-      img.height = 34;
-      img.addEventListener('error', () => { holder.textContent = initial; }, { once: true });
-      holder.append(img);
-    }
+    // Flat silhouette: white by default, the card color on hover.
+    holder.classList.add('legacy-icon');
+    holder.style.maskImage = `url("${src}")`;
   } else {
     holder.textContent = initial;
     holder.classList.add('initial-icon');

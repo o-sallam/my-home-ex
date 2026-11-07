@@ -1,5 +1,6 @@
 import { CATALOG } from './catalog.js';
 import { createIcon, safeColor } from './icons.js';
+import iconFiles from './icon-files.json';
 import { websiteUrl } from './urls.js';
 import { setupDialog } from './dialogs.js';
 
@@ -47,8 +48,27 @@ export function setupShortcuts({ getState, update, notify }) {
 
   function updatePreview() {
     preview.replaceChildren(createIcon({ ...draft, label: name.value, color: color.value }));
-    document.querySelector('.color-field').hidden = Boolean(draft.image || (draft.icon && !/^(fab|fas|far) /.test(draft.icon)));
+    picker.querySelectorAll('.picker-item').forEach((item) => item.setAttribute('aria-pressed', !draft.image && item.dataset.icon === draft.icon));
   }
+
+  const picker = document.querySelector('#icon-picker');
+  Object.keys(iconFiles).forEach((key) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'picker-item';
+    button.dataset.icon = key;
+    button.title = key.replace(/^(fab|fas|far) fa-/, '').replace(/-/g, ' ');
+    button.setAttribute('aria-label', button.title);
+    button.setAttribute('aria-pressed', 'false');
+    button.append(createIcon({ icon: key, color: '#3794ff', label: key }));
+    button.addEventListener('click', () => {
+      draft.icon = key;
+      delete draft.image;
+      upload.value = '';
+      updatePreview();
+    });
+    picker.append(button);
+  });
 
   async function save(card) {
     if (index === null || saving || uploading) return;

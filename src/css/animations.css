@@ -1,11 +1,11 @@
 .cell { transition: transform 200ms var(--ease), background-color 180ms ease, border-color 180ms ease, box-shadow 200ms ease; }
-.cell:hover { transform: translateY(-3px); }
+.cell:hover { transform: translateY(-2px); }
 .cell:active { transform: translateY(0) scale(.98); }
 .button, .icon-button, .catalog-item, .size-option, .tab { transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms var(--ease); }
 .catalog-item:hover { transform: translateY(-2px); }
 .button:active, .catalog-item:active { transform: scale(.97); }
 .cell-hint { transition: opacity 150ms ease; }
-.grid .cell { animation: settle 180ms var(--ease); }
+.grid .cell.fresh { animation: settle 180ms var(--ease); }
 .dialog[open] { animation: dialog-in 200ms var(--ease); }
 .dialog[open]::backdrop { animation: fade-in 180ms ease; }
 .dialog.is-closing { animation: dialog-out 140ms ease forwards; }

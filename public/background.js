@@ -15,10 +15,31 @@ async function ensureOffscreen() {
   }
 }
 
+let creating = null;
+
+async function sendToOffscreen(kind) {
+  // The new document may not have registered its listener yet; retry briefly.
+  for (let attempt = 0; attempt < 25; attempt++) {
+    try {
+      if (await chrome.runtime.sendMessage({ target: 'offscreen', kind })) return true;
+    } catch { /* not ready yet */ }
+    await new Promise((resolve) => setTimeout(resolve, 40));
+  }
+  return false;
+}
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (sender.id !== chrome.runtime.id || message?.type !== 'ui-sound') return false;
-  ensureOffscreen()
-    .then(() => chrome.runtime.sendMessage({ target: 'offscreen', kind: message.kind }))
-    .then(() => sendResponse(true), () => sendResponse(false));
+  (async () => {
+    const url = chrome.runtime.getURL(OFFSCREEN);
+    const existing = await chrome.runtime.getContexts({ contextTypes: ['OFFSCREEN_DOCUMENT'], documentUrls: [url] });
+    if (!existing.length) {
+      // While the document is starting, drop ticks so they don't all burst out at once.
+      if (creating) return message.kind === 'tick';
+      creating = ensureOffscreen().finally(() => { creating = null; });
+      await creating;
+    }
+    return sendToOffscreen(message.kind);
+  })().then(sendResponse, () => sendResponse(false));
   return true;
 });

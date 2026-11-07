@@ -16,27 +16,19 @@ export function tick() { blip('tick', 1900, 1200, 0.045, 0.06, 35); }
 // Slightly lower, softer "pop" for activating a card.
 export function pop() { blip('pop', 900, 380, 0.09, 0.09, 0); }
 
-function blip(kind, from, to, length, volume, gap) {
+async function blip(kind, from, to, length, volume, gap) {
   if (!soundEnabled()) return;
   const now = performance.now();
   if (now - last < gap) return;
   last = now;
-  // Preferred path: the extension's offscreen document may play without a prior gesture.
-  if (typeof chrome !== 'undefined' && chrome.runtime?.id) {
-    chrome.runtime.sendMessage({ type: 'ui-sound', kind }).then((ok) => { if (!ok) local(from, to, length, volume); }, () => local(from, to, length, volume));
-    return;
-  }
-  local(from, to, length, volume);
-}
-
-function local(from, to, length, volume) {
-  // Fallback: browsers keep audio blocked until the user has pressed a key or clicked.
-  if (!navigator.userActivation?.hasBeenActive && !ctx) return;
   try {
+    // First choice: play directly. This works whenever the browser allows autoplay.
     ctx ??= new AudioContext();
-    if (ctx.state === 'running') play(from, to, length, volume);
-    else if (navigator.userActivation?.hasBeenActive) ctx.resume().then(() => play(from, to, length, volume), () => {});
-  } catch { /* audio unavailable */ }
+    if (ctx.state !== 'running') await Promise.race([ctx.resume().catch(() => {}), new Promise((r) => setTimeout(r, 80))]);
+    if (ctx.state === 'running') { play(from, to, length, volume); return; }
+  } catch { /* fall through to the offscreen page */ }
+  // Otherwise ask the extension's offscreen document, which may be allowed to play.
+  if (typeof chrome !== 'undefined' && chrome.runtime?.id) chrome.runtime.sendMessage({ type: 'ui-sound', kind }).catch(() => {});
 }
 
 function play(from, to, length, volume) {

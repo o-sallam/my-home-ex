@@ -22,7 +22,8 @@ function wav(from, to, length, volume) {
 
 const sounds = { tick: wav(1900, 1200, 0.05, 0.35), pop: wav(900, 380, 0.1, 0.5) };
 
-chrome.runtime.onMessage.addListener((message) => {
-  if (message?.target !== 'offscreen' || !sounds[message.kind]) return;
-  new Audio(sounds[message.kind]).play().catch(() => {});
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message?.target !== 'offscreen' || !sounds[message.kind]) return false;
+  new Audio(sounds[message.kind]).play().then(() => sendResponse(true), () => sendResponse(false));
+  return true;
 });

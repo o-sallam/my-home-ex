@@ -4,9 +4,17 @@
   "version": "2.0.0",
   "minimum_chrome_version": "120",
   "description": "A quiet home for your favorite websites. Customizable shortcuts, entirely yours.",
-  "permissions": ["storage"],
-  "chrome_url_overrides": { "newtab": "index.html" },
+  "permissions": [
+    "storage",
+    "offscreen"
+  ],
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'none'; img-src 'self' data:; connect-src 'self'; base-uri 'none';"
+  },
+  "background": {
+    "service_worker": "background.js"
   }
 }

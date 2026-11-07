@@ -34,3 +34,12 @@ body.intro .grid .cell { animation: cell-reveal 640ms var(--ease) both; animatio
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   .cell:hover, .cell:active, .catalog-item:hover, .button:active, .catalog-item:active { transform: none; }
 }
+
+.cell { overflow: hidden; }
+.ripple { position: absolute; border-radius: 50%; background: var(--ripple, #3794ff); opacity: 0; pointer-events: none; transform: scale(0); animation: ripple 560ms cubic-bezier(.2, .7, .3, 1) forwards; }
+.cell.launching { animation: launch 220ms var(--ease) forwards; }
+.cell.launching .brand-icon { color: var(--icon-color, var(--blue)); }
+.cell.launching .legacy-icon { background: var(--icon-color, var(--blue)); }
+@keyframes ripple { 0% { opacity: .32; transform: scale(0); } 100% { opacity: 0; transform: scale(1); } }
+@keyframes launch { 0% { transform: scale(1); } 35% { transform: scale(.94); } 100% { transform: scale(1.04); border-color: var(--icon-color, var(--blue)); } }
+@media (prefers-reduced-motion: reduce) { .ripple { display: none; } }

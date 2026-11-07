@@ -1,5 +1,6 @@
 import { createIcon } from './icons.js';
 import { websiteUrl, hostname } from './urls.js';
+import { tick, pop } from './sound.js';
 
 export function createGrid({ element, onEdit, onMove }) {
   let dragIndex = null;
@@ -69,6 +70,22 @@ export function createGrid({ element, onEdit, onMove }) {
     if (focused !== null) focusCell(focused);
   }
 
+  // Expanding wave from the pointer (or the center for keyboard activation).
+  function ripple(cell, event) {
+    const box = cell.getBoundingClientRect();
+    const keyboard = event.detail === 0;
+    const x = keyboard ? box.width / 2 : event.clientX - box.left;
+    const y = keyboard ? box.height / 2 : event.clientY - box.top;
+    const radius = Math.hypot(Math.max(x, box.width - x), Math.max(y, box.height - y));
+    const wave = document.createElement('span');
+    wave.className = 'ripple';
+    wave.setAttribute('aria-hidden', 'true');
+    Object.assign(wave.style, { left: `${x - radius}px`, top: `${y - radius}px`, width: `${radius * 2}px`, height: `${radius * 2}px` });
+    wave.style.setProperty('--ripple', cell.querySelector('.brand-icon')?.style.getPropertyValue('--icon-color') || '#3794ff');
+    cell.append(wave);
+    wave.addEventListener('animationend', () => wave.remove(), { once: true });
+  }
+
   function focusCell(index) { element.querySelector(`[data-index="${index}"]`)?.focus({ preventScroll: true }); }
 
   element.addEventListener('click', (event) => {
@@ -76,9 +93,15 @@ export function createGrid({ element, onEdit, onMove }) {
     if (cell?.classList.contains('blocked')) { event.preventDefault(); return; }
     if (!cell) return;
     const url = cell.dataset.url;
+    pop();
+    ripple(cell, event);
     if (!url) { onEdit(Number(cell.dataset.index)); return; }
-    if (event.ctrlKey || event.metaKey || event.shiftKey) window.open(url, '_blank', 'noopener,noreferrer');
-    else window.location.assign(url);
+    if (event.ctrlKey || event.metaKey || event.shiftKey) { window.open(url, '_blank', 'noopener,noreferrer'); return; }
+    // Let the press animation play before the page changes.
+    cell.style.setProperty('--icon-color', cell.querySelector('.brand-icon')?.style.getPropertyValue('--icon-color') || '#3794ff');
+    cell.classList.add('launching');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setTimeout(() => window.location.assign(url), reduced ? 0 : 200);
   });
   element.addEventListener('auxclick', (event) => {
     const url = event.button === 1 ? event.target.closest('.cell')?.dataset.url : null;
@@ -132,8 +155,17 @@ export function createGrid({ element, onEdit, onMove }) {
       if (to < 0 || to >= total) to = from;
     }
     event.preventDefault();
+    if (to !== from) tick();
     focusCell(to);
   });
+  let hovered = null;
+  element.addEventListener('mouseover', (event) => {
+    const cell = event.target.closest('.cell');
+    if (cell === hovered) return;
+    hovered = cell;
+    if (cell) tick();
+  });
+  element.addEventListener('mouseleave', () => { hovered = null; });
   element.addEventListener('keydown', async (event) => {
     if (!editMode || !event.altKey || !event.key.startsWith('Arrow')) return;
     const cell = event.target.closest('.cell');

@@ -1,4 +1,5 @@
 import { websiteUrl } from './urls.js';
+import { soundEnabled, setSoundEnabled, tick } from './sound.js';
 
 const ICONS = {
   open: 'M14 4h6v6M20 4l-9 9M18 14v5H5V6h5',
@@ -87,6 +88,7 @@ export function setupContextMenu({ getState, isEditing, toggleEdit, setView, set
     nodes.push(sep(), heading('Grid size'));
     for (const size of [3, 4, 5]) nodes.push(item(`${size} × ${size}`, { check: state.settings.gridSize === size, onClick: () => setGridSize(size) }));
     nodes.push(sep());
+    nodes.push(item('Tick sound', { check: soundEnabled(), onClick: () => { setSoundEnabled(!soundEnabled()); tick(); } }));
     nodes.push(item('Settings', { icon: 'gear', onClick: openSettings }));
     nodes.push(item('Reload page', { icon: 'reload', key: 'Ctrl+R', onClick: () => window.location.reload() }));
     return nodes;

@@ -1,0 +1,22 @@
+.cell { transition: transform 200ms var(--ease), background-color 180ms ease, border-color 180ms ease, box-shadow 200ms ease; }
+.cell:hover { transform: translateY(-3px); }
+.cell:active { transform: translateY(0) scale(.98); }
+.button, .icon-button, .catalog-item, .size-option, .tab { transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms var(--ease); }
+.catalog-item:hover { transform: translateY(-2px); }
+.button:active, .catalog-item:active { transform: scale(.97); }
+.cell-hint { transition: opacity 150ms ease; }
+.grid .cell { animation: settle 180ms var(--ease); }
+.dialog[open] { animation: dialog-in 200ms var(--ease); }
+.dialog[open]::backdrop { animation: fade-in 180ms ease; }
+.dialog.is-closing { animation: dialog-out 140ms ease forwards; }
+.dialog.is-closing::backdrop { animation: fade-out 140ms ease forwards; }
+.notice { animation: fade-in 160ms ease; }
+@keyframes settle { from { opacity: .6; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes dialog-in { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes dialog-out { to { opacity: 0; transform: translateY(6px) scale(.985); } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fade-out { to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .cell:hover, .cell:active, .catalog-item:hover, .button:active, .catalog-item:active { transform: none; }
+}

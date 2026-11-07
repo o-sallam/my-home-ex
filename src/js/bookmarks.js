@@ -29,8 +29,12 @@ function favicon(url) {
 
 export function setupBookmarks({ notify }) {
   const button = document.querySelector('#bookmarks-open');
-  if (!api) return { open() {} };
   button.hidden = false;
+  if (!api) {
+    const explain = () => notify('Bookmarks access is missing. Reload the extension at brave://extensions (or chrome://extensions) and accept its new permissions.');
+    button.addEventListener('click', explain);
+    return { open: explain };
+  }
   const dialog = setupDialog(document.querySelector('#bookmarks-dialog'));
   const list = document.querySelector('#bookmarks-list');
   const search = document.querySelector('#bookmarks-search');

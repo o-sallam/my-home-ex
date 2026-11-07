@@ -22,18 +22,19 @@ export function createGrid({ element, onEdit, onMove }) {
     for (let i = 0; i < columns ** 2; i++) {
       const card = state.cards[i];
       const url = websiteUrl(card?.url);
-      const cell = document.createElement(card && !editing && url ? 'a' : 'button');
+      const cell = document.createElement('button');
       const blocked = !editing && !url;
       cell.className = `cell ${card ? 'shortcut' : 'empty-cell'}${blocked ? ' blocked' : ''}`;
       if (blocked) cell.setAttribute('aria-disabled', 'true');
       cell.dataset.index = i;
       if (!document.body.classList.contains('intro')) cell.classList.add('fresh');
       cell.style.setProperty('--i', Math.floor(i / columns) + (i % columns));
-      if (cell.tagName === 'A') cell.href = url;
-      else cell.type = 'button';
+      cell.type = 'button';
+      // No href: the browser would show the destination in its status bar on hover.
+      if (card && !editing && url) { cell.dataset.url = url; cell.setAttribute('role', 'link'); }
       const name = card ? String(card.label || 'Untitled shortcut') : 'Add shortcut';
       cell.setAttribute('aria-label', blocked ? `${card ? name : 'Empty'}, no link, cell ${i + 1}` : card ? `${editing || !url ? 'Edit ' : ''}${name}, cell ${i + 1}` : `Add shortcut to cell ${i + 1}`);
-      cell.title = blocked ? (card ? 'No link yet. Turn on edit mode to set one.' : 'Empty. Turn on edit mode to add a shortcut.') : card ? (editing ? `Edit ${name}` : url || 'Update this shortcut with an http:// or https:// URL') : 'Add a shortcut';
+      cell.title = blocked ? (card ? 'No link yet. Turn on edit mode to set one.' : 'Empty. Turn on edit mode to add a shortcut.') : card ? (editing ? `Edit ${name}` : url ? name : 'Update this shortcut with an http:// or https:// URL') : 'Add a shortcut';
       if (card) {
         const well = document.createElement('span');
         well.className = 'icon-well';
@@ -73,7 +74,17 @@ export function createGrid({ element, onEdit, onMove }) {
   element.addEventListener('click', (event) => {
     const cell = event.target.closest('.cell');
     if (cell?.classList.contains('blocked')) { event.preventDefault(); return; }
-    if (cell && cell.tagName !== 'A') onEdit(Number(cell.dataset.index));
+    if (!cell) return;
+    const url = cell.dataset.url;
+    if (!url) { onEdit(Number(cell.dataset.index)); return; }
+    if (event.ctrlKey || event.metaKey || event.shiftKey) window.open(url, '_blank', 'noopener,noreferrer');
+    else window.location.assign(url);
+  });
+  element.addEventListener('auxclick', (event) => {
+    const url = event.button === 1 ? event.target.closest('.cell')?.dataset.url : null;
+    if (!url) return;
+    event.preventDefault();
+    window.open(url, '_blank', 'noopener,noreferrer');
   });
   element.addEventListener('dragstart', (event) => {
     const cell = event.target.closest('.cell');

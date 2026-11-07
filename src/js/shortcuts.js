@@ -4,7 +4,7 @@ import iconFiles from './icon-files.json';
 import { websiteUrl } from './urls.js';
 import { setupDialog } from './dialogs.js';
 
-export function setupShortcuts({ getState, update, notify, getUsage = () => null }) {
+export function setupShortcuts({ getState, update, notify, getUsage = () => null, lock }) {
   const element = document.querySelector('#shortcut-dialog');
   const dialog = setupDialog(element);
   const form = document.querySelector('#shortcut-form');
@@ -142,8 +142,21 @@ export function setupShortcuts({ getState, update, notify, getUsage = () => null
   for (const control of [scheduleOn, scheduleStart, scheduleEnd, limitOn, limitPreset, limitCustom]) control.addEventListener('input', syncRestrictions);
   url.addEventListener('input', syncRestrictions);
 
+  // Schedules and limits are read-only until the password has been entered.
+  const lockRow = document.querySelector('#restrictions-lock');
+  const limitFields = document.querySelector('#restrictions-fields');
+  function setLimitsLocked(locked) {
+    limitFields.disabled = locked;
+    lockRow.hidden = !locked;
+  }
+  document.querySelector('#restrictions-unlock').addEventListener('click', async () => {
+    if (await lock.ensureUnlocked()) setLimitsLocked(false);
+  });
+
   async function save(card) {
     if (index === null || saving || uploading) return;
+    // Every save path (form, catalog, remove) re-checks the password if restrictions are involved.
+    if ((getState().cards[index]?.limits || card?.limits) && !(await lock.ensureUnlocked())) return;
     saving = true;
     const target = index;
     const currentSession = session;
@@ -223,19 +236,25 @@ export function setupShortcuts({ getState, update, notify, getUsage = () => null
     showError();
     if (limitOn.checked && !limitMinutes()) limitCustom.setCustomValidity('Enter a whole number of minutes from 1 to 1440.');
     if (!form.reportValidity()) return;
+    // Changing, adding or removing restrictions always needs the password.
+    if ((getState().cards[index]?.limits || readLimits()) && !(await lock.ensureUnlocked())) return;
     const saved = { ...draft, label: name.value.trim(), url: validUrl, color: color.value };
     const limits = readLimits();
     if (limits) saved.limits = limits; else delete saved.limits;
     await save(saved);
   });
   document.querySelector('#custom-cancel').addEventListener('click', dialog.close);
-  document.querySelector('#remove-shortcut').addEventListener('click', () => save(null));
+  document.querySelector('#remove-shortcut').addEventListener('click', async () => {
+    if (getState().cards[index]?.limits && !(await lock.ensureUnlocked())) return;
+    save(null);
+  });
   element.addEventListener('close', () => {
     // Saving re-renders the grid, replacing the element that opened the dialog.
     // Restore keyboard focus to its replacement before clearing the slot.
     if (index !== null) document.querySelector(`#grid [data-index="${index}"]`)?.focus({ preventScroll: true });
     session++;
     index = null;
+    lock.relock();
   });
 
   return {
@@ -258,6 +277,7 @@ export function setupShortcuts({ getState, update, notify, getUsage = () => null
       document.querySelector('#remove-row').hidden = !existing;
       setTab(existing ? 'custom-tab' : 'catalog-tab');
       loadLimits(existing?.limits);
+      setLimitsLocked(!lock.isUnlocked());
       updatePreview();
       dialog.open();
     },

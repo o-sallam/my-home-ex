@@ -39,6 +39,27 @@
     </button>
     <footer class="page-footer"><div class="footer-left"><p id="edit-help" class="edit-help" hidden>Choose a shortcut to edit. Drag to reorder, or focus a cell and use Alt + arrow keys.</p><p id="keyboard-hint"><kbd>1</kbd>–<kbd>9</kbd><span> to open · </span><kbd>Shift</kbd><span> for a new tab</span></p></div><span id="grid-summary">3 × 3 grid</span></footer>
 
+    <dialog id="lock-setup" class="dialog lock-dialog" aria-labelledby="lock-setup-title">
+      <form id="lock-setup-form" autocomplete="off">
+        <div class="dialog-heading"><div><p class="eyebrow">PASSWORD</p><h2 id="lock-setup-title">Set a password</h2></div></div>
+        <p id="lock-setup-intro" class="lock-intro"></p>
+        <div class="field"><label for="lock-new">New password</label><input id="lock-new" type="password" minlength="6" required autocomplete="new-password"></div>
+        <div class="field"><label for="lock-confirm">Confirm password</label><input id="lock-confirm" type="password" minlength="6" required autocomplete="new-password"></div>
+        <p id="lock-setup-error" class="form-error" role="alert" hidden></p>
+        <div class="dialog-bottom"><button id="lock-setup-cancel" class="button secondary" type="button" hidden>Cancel</button><button class="button primary" type="submit">Save password</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="lock-prompt" class="dialog lock-dialog" aria-labelledby="lock-prompt-title">
+      <form id="lock-prompt-form" autocomplete="off">
+        <div class="dialog-heading"><div><p class="eyebrow">PASSWORD REQUIRED</p><h2 id="lock-prompt-title">Enter the password</h2></div><button class="icon-button close-dialog" type="button" aria-label="Cancel">×</button></div>
+        <p class="lock-intro">Changing website schedules and limits is protected.</p>
+        <div class="field"><label for="lock-password">Password</label><input id="lock-password" type="password" required autocomplete="current-password"></div>
+        <p id="lock-prompt-error" class="form-error" role="alert" hidden></p>
+        <div class="dialog-bottom"><button class="button primary" type="submit">Unlock</button></div>
+      </form>
+    </dialog>
+
     <dialog id="usage-dialog" class="dialog usage-dialog" aria-labelledby="usage-title">
       <div class="dialog-heading"><div><p class="eyebrow">SCREEN TIME</p><h2 id="usage-title">Website usage</h2></div><button class="icon-button close-dialog" aria-label="Close usage">×</button></div>
       <div class="usage-tabs" role="tablist" aria-label="Period"><button id="usage-day" class="usage-tab" role="tab" aria-selected="true">Today</button><button id="usage-week" class="usage-tab" role="tab" aria-selected="false">Last 7 days</button></div>
@@ -61,6 +82,7 @@
         <label class="size-option"><input type="radio" name="grid-size" value="5"><span class="grid-mini mini-5" aria-hidden="true"></span><strong>Large</strong><span>5 × 5 · 25 cells</span></label>
       </div><p class="setting-note">A smaller grid keeps your other shortcuts saved. They’ll be here when you switch back.</p></fieldset>
       <label class="toggle-row"><input id="auto-sort" type="checkbox"><span class="toggle-text"><strong>Most used first</strong><span>Shortcuts you open more often move toward the top. Turn off to keep your own order.</span></span></label>
+      <div id="password-row" class="lock-row settings-lock" hidden><span>Protects website schedules and limits.</span><button id="change-password" class="button secondary" type="button">Change password</button></div>
       <div class="dialog-bottom"><span class="field-help">Changes save automatically.</span><button class="button primary close-dialog">Done</button></div>
     </dialog>
 
@@ -75,7 +97,8 @@
           <div class="field"><label for="shortcut-name">Shortcut name</label><input id="shortcut-name" name="name" type="text" placeholder="My favorite website" maxlength="80" required autocomplete="off"></div>
           <div class="field"><label for="shortcut-url">Website URL</label><input id="shortcut-url" name="url" type="url" placeholder="https://example.com" required autocomplete="url" aria-describedby="url-help"><p id="url-help" class="field-help">Use a full http:// or https:// address.</p></div>
           <div class="field color-field"><label for="shortcut-color">Icon color</label><input id="shortcut-color" type="color" value="#75baff"></div>
-          <fieldset class="restrictions">
+          <div id="restrictions-lock" class="lock-row" hidden><span>Locked. A password is needed to change schedules and limits.</span><button id="restrictions-unlock" class="button secondary" type="button">Unlock</button></div>
+          <fieldset id="restrictions-fields" class="restrictions">
             <legend>Time restrictions</legend>
             <label class="toggle-row compact"><input id="schedule-enabled" type="checkbox"><span class="toggle-text"><strong>Allowed hours</strong><span>Only allow this website between two times. Uses your local time.</span></span></label>
             <div id="schedule-fields" class="inline-fields" hidden>

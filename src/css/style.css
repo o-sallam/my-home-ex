@@ -296,3 +296,13 @@ input[type='color'] { border: 1px solid #454545; background: var(--background); 
 .usage-figures strong.is-zero { color: var(--muted); }
 .usage-note { margin-top: 14px; }
 @media (max-width: 620px) { .usage-row { grid-template-columns: minmax(0, 1fr) auto; } .usage-meter { display: none; } .usage-chart { display: none; } }
+
+.lock-dialog { width: min(420px, calc(100% - 32px)); }
+.lock-intro { margin-bottom: 18px; color: var(--muted); font-size: 12px; }
+.lock-dialog .dialog-heading { margin-bottom: 14px; }
+.lock-dialog.shake { animation: shake 320ms ease; }
+@keyframes shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+.lock-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 14px 0 0; padding: 10px 12px; border: 1px solid #5a1d1d; border-radius: 6px; background: #f4877110; color: #f48771; font-size: 12px; }
+.settings-lock { border-color: #454545; background: #2d2d30; color: var(--muted); }
+fieldset.restrictions:disabled { opacity: .45; }
+fieldset.restrictions:disabled * { cursor: not-allowed; }

@@ -10,6 +10,7 @@ import { setupBookmarks } from './bookmarks.js';
 import { setupTooltip } from './tooltip.js';
 import { setupUsageModal } from './usage-modal.js';
 import { sortByUsage } from './usage.js';
+import { setupLock } from './lock.js';
 
 const home = document.querySelector('#home');
 const notice = document.querySelector('#notice');
@@ -24,6 +25,8 @@ function notify(message) {
 async function start() {
   const storage = createStorage();
   let state = await loadState(storage);
+  const lock = setupLock({ storage });
+  await lock.ensureSetup();
   const L = globalThis.LimitsCore;
   let usage = L ? (await storage.get(L.USAGE_KEY)) || null : null;
   let lastBlockedSignature = '';
@@ -88,10 +91,16 @@ async function start() {
     if (redraw) render();
   }
 
-  const shortcuts = setupShortcuts({ getState, update, notify, getUsage: () => usage });
+  // Editing a restricted shortcut (it could remove or loosen its limits) needs the password first.
+  async function openShortcut(index) {
+    if (state.cards[index]?.limits && !(await lock.ensureUnlocked())) return;
+    shortcuts.open(index);
+  }
+
+  const shortcuts = setupShortcuts({ getState, update, notify, getUsage: () => usage, lock });
   const grid = createGrid({
     element: document.querySelector('#grid'),
-    onEdit: shortcuts.open,
+    onEdit: openShortcut,
     onOpen: recordOpen,
     onMove: async (from, to) => {
       if (from === to) return false;
@@ -125,7 +134,7 @@ async function start() {
     document.querySelector('#grid-summary').textContent = `${state.settings.gridSize} × ${state.settings.gridSize} ${state.settings.view === 'list' ? 'in list view' : 'grid'}`;
   }
 
-  setupSettings({ getState, update });
+  setupSettings({ getState, update, lock });
   document.querySelector('#edit-toggle').addEventListener('click', () => { editMode = !editMode; render(); });
   for (const view of ['grid', 'list']) {
     document.querySelector(`#view-${view}`).addEventListener('click', () => update((next) => { next.settings.view = view; }));
@@ -160,8 +169,11 @@ async function start() {
     toggleEdit: () => { editMode = !editMode; render(); },
     setView: (view) => update((next) => { next.settings.view = view; }),
     setGridSize: (size) => update((next) => { next.settings.gridSize = size; }),
-    openShortcut: shortcuts.open,
-    removeShortcut: (index) => update((next) => { next.cards[index] = null; }),
+    openShortcut,
+    removeShortcut: async (index) => {
+      if (state.cards[index]?.limits && !(await lock.ensureUnlocked())) return;
+      update((next) => { next.cards[index] = null; });
+    },
     openSettings: () => document.querySelector('#settings-open').click(),
     notify,
   });

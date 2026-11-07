@@ -192,3 +192,5 @@ input[type='color'] { border: 1px solid #454545; background: var(--background); 
 .settings-button .ui-icon { width: 18px; height: 18px; }
 .page-header { position: sticky; top: 0; z-index: 5; background: var(--background); border-bottom: 1px solid var(--border); padding-top: 14px; padding-bottom: 14px; }
 .page-footer { position: sticky; bottom: 0; z-index: 5; }
+.cell:focus-visible { outline: none; border-color: var(--focus); background: var(--surface-hover); box-shadow: 0 0 0 1px var(--focus); }
+.cell.blocked:focus-visible { border-color: #5a5d5e; box-shadow: none; }

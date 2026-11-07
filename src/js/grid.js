@@ -110,6 +110,30 @@ export function createGrid({ element, onEdit, onMove }) {
     if (from !== null && cell) await onMove(from, Number(cell.dataset.index));
   });
   element.addEventListener('dragend', clearDrag);
+  // Arrow keys / Home / End move focus between cells (no wrapping).
+  document.addEventListener('keydown', (event) => {
+    if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) return;
+    if (document.querySelector('dialog[open]') || !document.querySelector('#context-menu').hidden) return;
+    const current = event.target.closest?.('.cell');
+    if (!current && event.target !== document.body) return;
+    const total = columns ** 2;
+    const list = element.classList.contains('list-view');
+    const step = list ? 1 : columns;
+    const from = current ? Number(current.dataset.index) : -1;
+    let to;
+    if (event.key === 'Home') to = 0;
+    else if (event.key === 'End') to = total - 1;
+    else if (from < 0) to = 0;
+    else {
+      const delta = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -step, ArrowDown: step }[event.key];
+      to = from + delta;
+      if (!list && ((event.key === 'ArrowLeft' && from % columns === 0) || (event.key === 'ArrowRight' && from % columns === columns - 1))) to = from;
+      if (to < 0 || to >= total) to = from;
+    }
+    event.preventDefault();
+    focusCell(to);
+  });
   element.addEventListener('keydown', async (event) => {
     if (!editMode || !event.altKey || !event.key.startsWith('Arrow')) return;
     const cell = event.target.closest('.cell');

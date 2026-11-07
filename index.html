@@ -64,6 +64,20 @@
           <div class="field"><label for="shortcut-name">Shortcut name</label><input id="shortcut-name" name="name" type="text" placeholder="My favorite website" maxlength="80" required autocomplete="off"></div>
           <div class="field"><label for="shortcut-url">Website URL</label><input id="shortcut-url" name="url" type="url" placeholder="https://example.com" required autocomplete="url" aria-describedby="url-help"><p id="url-help" class="field-help">Use a full http:// or https:// address.</p></div>
           <div class="field color-field"><label for="shortcut-color">Icon color</label><input id="shortcut-color" type="color" value="#75baff"></div>
+          <fieldset class="restrictions">
+            <legend>Time restrictions</legend>
+            <label class="toggle-row compact"><input id="schedule-enabled" type="checkbox"><span class="toggle-text"><strong>Allowed hours</strong><span>Only allow this website between two times. Uses your local time.</span></span></label>
+            <div id="schedule-fields" class="inline-fields" hidden>
+              <div class="time-field"><span>From</span><div id="schedule-start" class="time-picker" role="group" data-label="From"></div></div>
+              <div class="time-field"><span>To</span><div id="schedule-end" class="time-picker" role="group" data-label="To"></div></div>
+            </div>
+            <label class="toggle-row compact"><input id="limit-enabled" type="checkbox"><span class="toggle-text"><strong>Daily time limit</strong><span>Counts only the time the website is open in front of you. Resets at midnight.</span></span></label>
+            <div id="limit-fields" class="inline-fields" hidden>
+              <label>Per day<select id="limit-preset"><option value="10">10 minutes</option><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="60">60 minutes</option><option value="custom">Custom…</option></select></label>
+              <label id="limit-custom-label" hidden>Minutes<input id="limit-custom" type="number" min="1" max="1440" step="1" value="45"></label>
+            </div>
+            <p id="usage-today" class="field-help" hidden></p>
+          </fieldset>
           <div class="dialog-bottom"><button id="custom-cancel" class="button secondary" type="button">Cancel</button><button id="save-shortcut" class="button primary" type="submit">Save shortcut</button></div>
         </form>
       </div>
@@ -74,6 +88,7 @@
     <div id="tooltip" class="tooltip" role="tooltip" aria-hidden="true"><div class="tip-body"><span class="tip-text"><strong class="tip-title"></strong><span class="tip-sub"></span></span><kbd class="tip-key"></kbd></div></div>
     <p id="notice" class="notice" role="status" hidden></p>
     <noscript><p class="fatal-error">Enable JavaScript to use your shortcuts.</p></noscript>
+    <script src="/limits-core.js"></script>
     <script type="module" src="/src/js/main.js"></script>
   </body>
 </html>

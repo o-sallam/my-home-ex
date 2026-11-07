@@ -32,7 +32,7 @@ function icon(name) {
   return svg;
 }
 
-export function setupContextMenu({ recordOpen, setAutoSort, getState, isEditing, toggleEdit, setView, setGridSize, openBookmarks, openShortcut, removeShortcut, openSettings, notify }) {
+export function setupContextMenu({ isBlocked, recordOpen, setAutoSort, getState, isEditing, toggleEdit, setView, setGridSize, openBookmarks, openShortcut, removeShortcut, openSettings, notify }) {
   const menu = document.querySelector('#context-menu');
 
   function hide() { menu.hidden = true; menu.replaceChildren(); }
@@ -69,7 +69,10 @@ export function setupContextMenu({ recordOpen, setAutoSort, getState, isEditing,
     const url = websiteUrl(card?.url);
     const nodes = [];
     if (card) {
-      if (url) {
+      if (url && isBlocked(cellIndex)) {
+        nodes.push(heading('Blocked right now'));
+        nodes.push(sep());
+      } else if (url) {
         nodes.push(item('Open', { icon: 'open', key: cellIndex < 9 ? String(cellIndex + 1) : '', onClick: () => { recordOpen(cellIndex, false); window.location.assign(url); } }));
         nodes.push(item('Open in new tab', { icon: 'tab', key: cellIndex < 9 ? `Shift+${cellIndex + 1}` : '', onClick: () => { recordOpen(cellIndex, true); window.open(url, '_blank', 'noopener,noreferrer'); } }));
         nodes.push(item('Copy link', { icon: 'copy', onClick: () => navigator.clipboard?.writeText(url).then(() => notify('Link copied.'), () => notify('Could not copy the link.')) }));

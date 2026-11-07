@@ -53,7 +53,7 @@ test('Chrome storage is authoritative over older local backups and supports lega
 });
 
 test('existing v2 Chrome data takes precedence and is not reset on startup', async () => {
-  const state = { version: 2, cards: [null, card], settings: { gridSize: 5, view: 'list' } };
+  const state = { version: 2, cards: [null, card], settings: { gridSize: 5, view: 'list', autoSort: true } };
   const chrome = chromeStore({ [STATE_KEY]: state });
   const local = localStore({ home_cards: JSON.stringify([]) });
   assert.deepEqual(await loadState(createStorage({ chrome, local, extension: true })), state);

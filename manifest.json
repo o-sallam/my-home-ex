@@ -18,5 +18,35 @@
   },
   "background": {
     "service_worker": "dist/background.js"
-  }
+  },
+  "icons": {
+    "16": "dist/icons/icon-16.png",
+    "32": "dist/icons/icon-32.png",
+    "48": "dist/icons/icon-48.png",
+    "128": "dist/icons/icon-128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "dist/limits-core.js",
+        "dist/content.js"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "dist/blocked.html"
+      ],
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ]
+    }
+  ]
 }

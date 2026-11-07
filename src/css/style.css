@@ -241,3 +241,27 @@ input[type='color'] { border: 1px solid #454545; background: var(--background); 
 .toggle-row input:focus-visible { outline: 1px solid var(--focus); outline-offset: 2px; }
 .toggle-text { display: flex; flex-direction: column; gap: 2px; font-size: 11px; color: var(--muted); }
 .toggle-text strong { font-size: 12px; font-weight: 400; color: var(--foreground); }
+
+.tip-sub { white-space: pre-line; }
+.cell-meta { display: none; color: var(--muted); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.list-view .cell-meta { display: block; margin-left: auto; max-width: 40%; }
+.list-view .cell-meta:empty { display: none; }
+.cell-badge { position: absolute; top: 9px; left: 11px; display: flex; color: var(--muted); opacity: .85; }
+.cell-badge.is-blocked { color: #f48771; opacity: 1; }
+.list-view .cell-badge { position: static; order: 5; }
+.cell.blocked .cell-badge { opacity: 1; }
+
+.restrictions { margin: 4px 0 0; padding: 14px 0 0; min-width: 0; border-top: 1px solid var(--border); }
+.restrictions legend { padding: 0 8px 0 0; font-size: 12px; font-weight: 500; }
+.restrictions .toggle-row.compact { margin-top: 10px; padding: 10px 12px; }
+.inline-fields { display: flex; flex-wrap: wrap; gap: 12px; margin: 10px 0 0; }
+.inline-fields label { display: flex; flex-direction: column; gap: 5px; font-size: 11px; color: var(--muted); }
+.inline-fields input, .inline-fields select { min-height: 34px; padding: 4px 10px; border: 1px solid #454545; border-radius: 4px; background: var(--background); color: var(--foreground); font-size: 12px; }
+.inline-fields input:focus-visible, .inline-fields select:focus-visible { outline: 1px solid var(--focus); outline-offset: 0; border-color: var(--focus); }
+.inline-fields input[type='number'] { width: 100px; }
+.restrictions .field-help { margin-top: 10px; }
+
+.time-field { display: flex; flex-direction: column; gap: 5px; font-size: 11px; color: var(--muted); }
+.time-picker { display: flex; gap: 4px; }
+.time-picker select { min-height: 34px; padding: 4px 8px; border: 1px solid #454545; border-radius: 4px; background: var(--background); color: var(--foreground); font-size: 12px; }
+.time-picker select:focus-visible { outline: 1px solid var(--focus); border-color: var(--focus); }

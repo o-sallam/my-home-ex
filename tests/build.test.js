@@ -31,16 +31,21 @@ test('production and upgrade manifests agree except for the page location', asyn
   assert.equal(production.chrome_url_overrides.newtab, 'index.html');
   delete root.chrome_url_overrides;
   delete production.chrome_url_overrides;
-  assert.deepEqual(root, production);
-  assert.deepEqual(root.permissions, ['storage']);
+  // The root manifest loads the built files from dist/, the production one sits inside it.
+  const unprefixed = JSON.parse(JSON.stringify(root).replaceAll('"dist/', '"'));
+  assert.deepEqual(unprefixed, production);
+  assert.deepEqual(root.permissions, ['storage', 'offscreen', 'bookmarks', 'favicon']);
+  for (const file of [root.background.service_worker, ...root.content_scripts[0].js, ...Object.values(root.icons)]) {
+    await access(new URL(`../${file}`, import.meta.url));
+  }
   assert.equal(root.manifest_version, 3);
   assert.doesNotMatch(root.content_security_policy.extension_pages, /unsafe-eval|unsafe-inline/);
 });
 
-test('source HTML contains only local, external-module scripts', async () => {
+test('source HTML contains only local, external scripts', async () => {
   const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
   assert.doesNotMatch(html, /on(?:click|load|error)=|https:\/\/cdnjs|history-panel|search-wrapper|name="q"/i);
-  assert.deepEqual([...html.matchAll(/<script\b[^>]*>/g)].map((match) => match[0]), ['<script type="module" src="/src/js/main.js">']);
+  assert.deepEqual([...html.matchAll(/<script\b[^>]*>/g)].map((match) => match[0]), ['<script src="/limits-core.js">', '<script type="module" src="/src/js/main.js">']);
 });
 
 test('dist contains the MV3 entry point, relative assets, licenses and no inline scripts', async () => {

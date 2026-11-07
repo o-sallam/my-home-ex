@@ -12,7 +12,30 @@ export function createGrid({ element, onEdit, onMove, onOpen }) {
     element.querySelectorAll('.dragging, .drag-over').forEach((cell) => cell.classList.remove('dragging', 'drag-over'));
   }
 
-  function render(state, editing) {
+  function tipFor(card, i, editing, status, blocked, name) {
+    const domain = card ? hostname(card.url) : '';
+    let tip = name; let sub = ''; let key = '';
+    if (blocked && status?.blocked) sub = status.lines.join('\n');
+    else if (blocked) { tip = card ? name : 'Empty slot'; sub = card ? 'No link yet. Turn on edit mode to set one.' : 'Turn on edit mode to add a shortcut'; }
+    else if (editing) { tip = card ? `Edit ${name}` : 'Add a shortcut'; sub = card ? [domain, ...(status?.lines || [])].join('\n') : `Cell ${i + 1}`; }
+    else { sub = [card?.opens ? `${domain} · opened ${card.opens}×` : domain, ...(status?.lines || [])].join('\n'); key = i < 9 ? String(i + 1) : ''; }
+    return { tip, sub, key };
+  }
+
+  // Update tooltip text in place (no redraw) when only the numbers changed.
+  function refresh(state, editing, statuses = []) {
+    element.querySelectorAll('.cell').forEach((cell) => {
+      const i = Number(cell.dataset.index);
+      const card = state.cards[i];
+      const name = card ? String(card.label || 'Untitled shortcut') : 'Add shortcut';
+      const info = tipFor(card, i, editing, statuses[i], cell.classList.contains('blocked'), name);
+      cell.dataset.tip = info.tip; cell.dataset.tipSub = info.sub; cell.dataset.tipKey = info.key;
+      const meta = cell.querySelector('.cell-meta');
+      if (meta) meta.textContent = (statuses[i]?.lines || []).join(' · ');
+    });
+  }
+
+  function render(state, editing, statuses = []) {
     const focused = element.contains(document.activeElement) ? Number(document.activeElement.closest('.cell')?.dataset.index) : null;
     editMode = editing;
     columns = state.settings.gridSize;
@@ -24,7 +47,9 @@ export function createGrid({ element, onEdit, onMove, onOpen }) {
       const card = state.cards[i];
       const url = websiteUrl(card?.url);
       const cell = document.createElement('button');
-      const blocked = !editing && !url;
+      const status = card ? statuses[i] : undefined;
+      const restricted = !editing && Boolean(status?.blocked);
+      const blocked = !editing && (!url || restricted);
       cell.className = `cell ${card ? 'shortcut' : 'empty-cell'}${blocked ? ' blocked' : ''}`;
       if (blocked) cell.setAttribute('aria-disabled', 'true');
       cell.dataset.index = i;
@@ -34,13 +59,9 @@ export function createGrid({ element, onEdit, onMove, onOpen }) {
       // No href: the browser would show the destination in its status bar on hover.
       if (card && !editing && url) { cell.dataset.url = url; cell.setAttribute('role', 'link'); }
       const name = card ? String(card.label || 'Untitled shortcut') : 'Add shortcut';
-      cell.setAttribute('aria-label', blocked ? `${card ? name : 'Empty'}, no link, cell ${i + 1}` : card ? `${editing || !url ? 'Edit ' : ''}${name}, cell ${i + 1}` : `Add shortcut to cell ${i + 1}`);
-      const domain = card ? hostname(card.url) : '';
-      let tip = name; let tipSub = ''; let tipKey = '';
-      if (blocked) { tip = card ? name : 'Empty slot'; tipSub = card ? 'No link yet. Turn on edit mode to set one.' : 'Turn on edit mode to add a shortcut'; }
-      else if (editing) { tip = card ? `Edit ${name}` : 'Add a shortcut'; tipSub = card ? domain : `Cell ${i + 1}`; }
-      else { tipSub = card?.opens ? `${domain} · opened ${card.opens}×` : domain; tipKey = i < 9 ? String(i + 1) : ''; }
-      cell.dataset.tip = tip; cell.dataset.tipSub = tipSub; cell.dataset.tipKey = tipKey;
+      cell.setAttribute('aria-label', restricted ? `${name}, blocked right now, cell ${i + 1}` : blocked ? `${card ? name : 'Empty'}, no link, cell ${i + 1}` : card ? `${editing || !url ? 'Edit ' : ''}${name}, cell ${i + 1}` : `Add shortcut to cell ${i + 1}`);
+      const info = tipFor(card, i, editing, status, blocked, name);
+      cell.dataset.tip = info.tip; cell.dataset.tipSub = info.sub; cell.dataset.tipKey = info.key;
       if (card) {
         const well = document.createElement('span');
         well.className = 'icon-well';
@@ -59,6 +80,19 @@ export function createGrid({ element, onEdit, onMove, onOpen }) {
       label.textContent = name;
       cell.append(label);
       if (card) {
+        const meta = document.createElement('span');
+        meta.className = 'cell-meta';
+        meta.textContent = (status?.lines || []).join(' · ');
+        cell.append(meta);
+        if (status) {
+          const badge = document.createElement('span');
+          badge.className = `cell-badge${status.blocked ? ' is-blocked' : ''}`;
+          badge.setAttribute('aria-hidden', 'true');
+          badge.innerHTML = status.blocked
+            ? '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>'
+            : '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg>';
+          cell.append(badge);
+        }
         const domain = document.createElement('span');
         domain.className = 'cell-domain';
         domain.textContent = hostname(card.url);
@@ -188,5 +222,5 @@ export function createGrid({ element, onEdit, onMove, onOpen }) {
     if (await onMove(from, to)) focusCell(to);
   });
 
-  return { render };
+  return { render, refresh };
 }

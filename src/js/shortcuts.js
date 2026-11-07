@@ -4,7 +4,7 @@ import iconFiles from './icon-files.json';
 import { websiteUrl } from './urls.js';
 import { setupDialog } from './dialogs.js';
 
-export function setupShortcuts({ getState, update, notify }) {
+export function setupShortcuts({ getState, update, notify, getUsage = () => null }) {
   const element = document.querySelector('#shortcut-dialog');
   const dialog = setupDialog(element);
   const form = document.querySelector('#shortcut-form');
@@ -15,6 +15,40 @@ export function setupShortcuts({ getState, update, notify }) {
   const error = document.querySelector('#shortcut-error');
   const preview = document.querySelector('#icon-preview');
   const tabs = [...element.querySelectorAll('[role="tab"]')];
+  const L = globalThis.LimitsCore;
+  const scheduleOn = document.querySelector('#schedule-enabled');
+  // 12-hour time picker (hour, minute, AM/PM). Its value is "HH:MM" in 24-hour form.
+  function timePicker(host) {
+    const make = (label, options) => {
+      const select = document.createElement('select');
+      select.setAttribute('aria-label', `${host.dataset.label} ${label}`);
+      for (const [value, text] of options) select.append(new Option(text, value));
+      host.append(select);
+      return select;
+    };
+    const hour = make('hour', Array.from({ length: 12 }, (_, i) => [String(i + 1), String(i + 1)]));
+    const minute = make('minute', Array.from({ length: 60 }, (_, i) => [String(i), String(i).padStart(2, '0')]));
+    const period = make('AM or PM', [['AM', 'AM'], ['PM', 'PM']]);
+    return {
+      get value() {
+        const h = (Number(hour.value) % 12) + (period.value === 'PM' ? 12 : 0);
+        return `${String(h).padStart(2, '0')}:${String(Number(minute.value)).padStart(2, '0')}`;
+      },
+      set value(time) {
+        const [h, m] = time.split(':').map(Number);
+        hour.value = String(h % 12 === 0 ? 12 : h % 12);
+        minute.value = String(m);
+        period.value = h >= 12 ? 'PM' : 'AM';
+      },
+      addEventListener: (type, handler) => host.addEventListener('change', handler),
+    };
+  }
+  const scheduleStart = timePicker(document.querySelector('#schedule-start'));
+  const scheduleEnd = timePicker(document.querySelector('#schedule-end'));
+  const limitOn = document.querySelector('#limit-enabled');
+  const limitPreset = document.querySelector('#limit-preset');
+  const limitCustom = document.querySelector('#limit-custom');
+  const usageText = document.querySelector('#usage-today');
   let index = null;
   let draft = {};
   let session = 0;
@@ -69,6 +103,44 @@ export function setupShortcuts({ getState, update, notify }) {
     });
     picker.append(button);
   });
+
+  function syncRestrictions() {
+    document.querySelector('#schedule-fields').hidden = !scheduleOn.checked;
+    document.querySelector('#limit-fields').hidden = !limitOn.checked;
+    document.querySelector('#limit-custom-label').hidden = limitPreset.value !== 'custom';
+    limitCustom.setCustomValidity('');
+    const host = L?.hostOfUrl(url.value);
+    const now = new Date();
+    const usedSeconds = host ? L.usedToday(getUsage(), host, now) : 0;
+    const minutes = limitMinutes();
+    const parts = [];
+    if (host) parts.push(`Today: ${L.formatDuration(usedSeconds)} used`);
+    if (limitOn.checked && minutes) parts.push(`${L.formatDuration(Math.max(0, minutes * 60 - usedSeconds))} left`);
+    usageText.textContent = parts.join(' · ');
+    usageText.hidden = !parts.length || !(limitOn.checked || usedSeconds > 0);
+  }
+  function limitMinutes() {
+    const value = limitPreset.value === 'custom' ? Number(limitCustom.value) : Number(limitPreset.value);
+    return Number.isInteger(value) && value >= 1 && value <= 1440 ? value : null;
+  }
+  function readLimits() {
+    const limits = {};
+    if (scheduleOn.checked) limits.schedule = { enabled: true, start: scheduleStart.value, end: scheduleEnd.value };
+    if (limitOn.checked) limits.daily = { enabled: true, minutes: limitMinutes() };
+    return limits.schedule || limits.daily ? limits : null;
+  }
+  function loadLimits(limits) {
+    scheduleOn.checked = Boolean(limits?.schedule?.enabled);
+    scheduleStart.value = limits?.schedule?.start || '18:00';
+    scheduleEnd.value = limits?.schedule?.end || '19:00';
+    limitOn.checked = Boolean(limits?.daily?.enabled);
+    const minutes = Number(limits?.daily?.minutes) || 15;
+    if ([10, 15, 30, 60].includes(minutes)) { limitPreset.value = String(minutes); limitCustom.value = '45'; }
+    else { limitPreset.value = 'custom'; limitCustom.value = String(minutes); }
+    syncRestrictions();
+  }
+  for (const control of [scheduleOn, scheduleStart, scheduleEnd, limitOn, limitPreset, limitCustom]) control.addEventListener('input', syncRestrictions);
+  url.addEventListener('input', syncRestrictions);
 
   async function save(card) {
     if (index === null || saving || uploading) return;
@@ -147,8 +219,14 @@ export function setupShortcuts({ getState, update, notify }) {
     const validUrl = websiteUrl(url.value);
     name.setCustomValidity(name.value.trim() ? '' : 'Enter a shortcut name.');
     url.setCustomValidity(validUrl ? '' : 'Enter a full http:// or https:// address without a username or password.');
+    if (scheduleOn.checked && scheduleStart.value === scheduleEnd.value) { showError('Choose different start and end times.'); return; }
+    showError();
+    if (limitOn.checked && !limitMinutes()) limitCustom.setCustomValidity('Enter a whole number of minutes from 1 to 1440.');
     if (!form.reportValidity()) return;
-    await save({ ...draft, label: name.value.trim(), url: validUrl, color: color.value });
+    const saved = { ...draft, label: name.value.trim(), url: validUrl, color: color.value };
+    const limits = readLimits();
+    if (limits) saved.limits = limits; else delete saved.limits;
+    await save(saved);
   });
   document.querySelector('#custom-cancel').addEventListener('click', dialog.close);
   document.querySelector('#remove-shortcut').addEventListener('click', () => save(null));
@@ -179,6 +257,7 @@ export function setupShortcuts({ getState, update, notify }) {
       document.querySelector('#shortcut-title').textContent = existing ? 'Edit shortcut' : 'Add a shortcut';
       document.querySelector('#remove-row').hidden = !existing;
       setTab(existing ? 'custom-tab' : 'catalog-tab');
+      loadLimits(existing?.limits);
       updatePreview();
       dialog.open();
     },

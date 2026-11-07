@@ -72,4 +72,10 @@ export async function loadState(storage) {
   return state;
 }
 
-export function saveState(storage, state) { return storage.set(STATE_KEY, state); }
+// The enforcement rules live under their own small key so content scripts never
+// need to read the whole state.
+export async function saveState(storage, state) {
+  await storage.set(STATE_KEY, state);
+  const core = globalThis.LimitsCore;
+  if (core) await storage.set(core.RULES_KEY, core.deriveRules(state.cards));
+}

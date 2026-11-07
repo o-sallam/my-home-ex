@@ -23,6 +23,9 @@ function notify(message) {
 async function start() {
   const storage = createStorage();
   let state = await loadState(storage);
+  const L = globalThis.LimitsCore;
+  let usage = L ? (await storage.get(L.USAGE_KEY)) || null : null;
+  let lastBlockedSignature = '';
   let editMode = false;
   let saving = false;
   const getState = () => state;
@@ -45,10 +48,36 @@ async function start() {
     } finally { saving = false; }
   }
 
+  // Availability of each card right now (schedule + daily limit), or undefined when unrestricted.
+  function statusFor(card, now = new Date()) {
+    const rule = L?.ruleFromCard(card);
+    if (!rule) return undefined;
+    const result = L.evaluate(rule, L.usedToday(usage, rule.host, now), now);
+    const lines = [];
+    if (!result.allowed) {
+      lines.push({ schedule: 'Outside allowed hours', limit: 'Daily limit reached', both: 'Outside hours and daily limit reached' }[result.reason]);
+      if (result.nextAllowed) lines.push(`Available ${L.formatWhen(result.nextAllowed, now)}`);
+    } else {
+      lines.push(L.describe(rule));
+      if (result.remainingSeconds !== null) lines.push(`${L.formatDuration(result.remainingSeconds)} left today`);
+    }
+    return { blocked: !result.allowed, lines, rule, result };
+  }
+  const allStatuses = () => { const now = new Date(); return state.cards.map((card) => (card ? statusFor(card, now) : undefined)); };
+  const isBlocked = (index) => Boolean(statusFor(state.cards[index])?.blocked);
+
+  // Called regularly: redraw only when something became (un)available, otherwise just refresh text.
+  function refreshAvailability() {
+    const statuses = allStatuses();
+    const signature = statuses.map((status) => (status?.blocked ? 1 : 0)).join('');
+    if (signature !== lastBlockedSignature) render();
+    else grid.refresh(state, editMode, statuses);
+  }
+
   // Count an open and, if enabled, move the card up. Same-tab opens skip the redraw
   // so the press animation isn't interrupted; the page is about to unload anyway.
   function recordOpen(index, redraw) {
-    if (!state.cards[index]) return;
+    if (!state.cards[index] || isBlocked(index)) return;
     const next = structuredClone(state);
     next.cards[index].opens = (next.cards[index].opens || 0) + 1;
     next.cards[index].lastOpened = Date.now();
@@ -58,7 +87,7 @@ async function start() {
     if (redraw) render();
   }
 
-  const shortcuts = setupShortcuts({ getState, update, notify });
+  const shortcuts = setupShortcuts({ getState, update, notify, getUsage: () => usage });
   const grid = createGrid({
     element: document.querySelector('#grid'),
     onEdit: shortcuts.open,
@@ -75,7 +104,9 @@ async function start() {
   setupTooltip(document.querySelector('#grid'));
 
   function render() {
-    grid.render(state, editMode);
+    const statuses = allStatuses();
+    lastBlockedSignature = statuses.map((status) => (status?.blocked ? 1 : 0)).join('');
+    grid.render(state, editMode, statuses);
     document.querySelector('.workspace').style.setProperty('--columns', state.settings.gridSize);
     const editToggle = document.querySelector('#edit-toggle');
     const editLabel = editMode ? 'Done editing' : 'Edit mode';
@@ -109,6 +140,7 @@ async function start() {
     const url = websiteUrl(state.cards[Number(number) - 1]?.url);
     if (!url) return;
     event.preventDefault();
+    if (isBlocked(Number(number) - 1)) { notify('This website is not allowed to run at this time.'); return; }
     recordOpen(Number(number) - 1, event.shiftKey);
     if (event.shiftKey) window.open(url, '_blank', 'noopener,noreferrer');
     else window.location.assign(url);
@@ -116,6 +148,7 @@ async function start() {
 
   const bookmarks = setupBookmarks({ notify });
   setupContextMenu({
+    isBlocked,
     recordOpen,
     setAutoSort: (on) => update((next) => { next.settings.autoSort = on; if (on) sortByUsage(next.cards); }),
     openBookmarks: bookmarks.open,
@@ -129,6 +162,18 @@ async function start() {
     openSettings: () => document.querySelector('#settings-open').click(),
     notify,
   });
+
+  // Keep availability live: usage changes from other tabs, plus a steady check for schedule edges.
+  if (L && globalThis.chrome?.storage?.onChanged) {
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area !== 'local' || !changes[L.USAGE_KEY]) return;
+      usage = changes[L.USAGE_KEY].newValue || null;
+      refreshAvailability();
+    });
+  }
+  setInterval(refreshAvailability, 5000);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshAvailability(); });
+  if (L) storage.set(L.RULES_KEY, L.deriveRules(state.cards)).catch(() => {});
 
   render();
   home.setAttribute('aria-busy', 'false');

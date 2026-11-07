@@ -57,8 +57,14 @@ async function start() {
   function render() {
     grid.render(state, editMode);
     document.querySelector('.workspace').style.setProperty('--columns', state.settings.gridSize);
-    document.querySelector('#edit-toggle').setAttribute('aria-pressed', editMode);
-    document.querySelector('#edit-toggle').textContent = editMode ? 'Done editing' : 'Edit mode';
+    const editToggle = document.querySelector('#edit-toggle');
+    const editLabel = editMode ? 'Done editing' : 'Edit mode';
+    editToggle.setAttribute('aria-pressed', editMode);
+    editToggle.setAttribute('aria-label', editLabel);
+    editToggle.title = editLabel;
+    editToggle.querySelector('path').setAttribute('d', editMode
+      ? 'm5 12 4 4L19 6'
+      : 'm16 3 5 5-12 12-6 1 1-6L16 3ZM14 5l5 5');
     document.querySelector('#edit-help').hidden = !editMode;
     document.querySelector('#keyboard-hint').hidden = editMode;
     for (const view of ['grid', 'list']) {

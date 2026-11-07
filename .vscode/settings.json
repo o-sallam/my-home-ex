@@ -1,0 +1,10 @@
+{
+  "files.exclude": {
+    "**/.claude": true,
+    "**/dist": true,
+    "**/node_modules": true,
+    ".vscode": true,
+    "**/.git": true,
+    "vitest.config.ts": true,
+  }
+}

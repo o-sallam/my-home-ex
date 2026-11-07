@@ -31,11 +31,17 @@
     sinceFlush = 0;
     try {
       const now = new Date();
-      const stored = (await chrome.storage.local.get(L.USAGE_KEY))[L.USAGE_KEY];
-      const next = normalize(stored, now);
+      const stored = await chrome.storage.local.get([L.USAGE_KEY, L.HISTORY_KEY]);
+      const next = normalize(stored[L.USAGE_KEY], now);
       next.seconds[rule.host] = (Number(next.seconds[rule.host]) || 0) + seconds;
       usage = next;
-      await chrome.storage.local.set({ [L.USAGE_KEY]: next });
+      // Daily totals per website, kept for about five weeks for the usage overview.
+      const history = stored[L.HISTORY_KEY] || {};
+      const today = history[next.day] || (history[next.day] = {});
+      today[rule.host] = (Number(today[rule.host]) || 0) + seconds;
+      const keep = new Set(L.lastDays(L.HISTORY_DAYS, now).map((d) => d.key));
+      for (const day of Object.keys(history)) if (!keep.has(day)) delete history[day];
+      await chrome.storage.local.set({ [L.USAGE_KEY]: next, [L.HISTORY_KEY]: history });
     } catch { /* extension reloaded or storage unavailable */ }
   }
 

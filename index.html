@@ -31,10 +31,21 @@
         <div id="grid" class="grid" aria-label="Shortcuts"></div>
       </section>
     </main>
+    <button id="usage-open" class="fab fab-secondary" aria-haspopup="dialog" aria-label="Screen time" title="Screen time">
+      <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>
+    </button>
     <button id="bookmarks-open" class="fab" aria-haspopup="dialog" aria-label="Browser bookmarks" title="Bookmarks" hidden>
       <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>
     </button>
     <footer class="page-footer"><div class="footer-left"><p id="edit-help" class="edit-help" hidden>Choose a shortcut to edit. Drag to reorder, or focus a cell and use Alt + arrow keys.</p><p id="keyboard-hint"><kbd>1</kbd>–<kbd>9</kbd><span> to open · </span><kbd>Shift</kbd><span> for a new tab</span></p></div><span id="grid-summary">3 × 3 grid</span></footer>
+
+    <dialog id="usage-dialog" class="dialog usage-dialog" aria-labelledby="usage-title">
+      <div class="dialog-heading"><div><p class="eyebrow">SCREEN TIME</p><h2 id="usage-title">Website usage</h2></div><button class="icon-button close-dialog" aria-label="Close usage">×</button></div>
+      <div class="usage-tabs" role="tablist" aria-label="Period"><button id="usage-day" class="usage-tab" role="tab" aria-selected="true">Today</button><button id="usage-week" class="usage-tab" role="tab" aria-selected="false">Last 7 days</button></div>
+      <div class="usage-summary"><div><span id="usage-total" class="usage-total">0 s</span><span id="usage-caption" class="usage-caption">total today</span></div><div id="usage-chart" class="usage-chart" aria-hidden="true"></div></div>
+      <div id="usage-list" class="usage-list"></div>
+      <p class="field-help usage-note">Counts only the time a website is open in front of you. Websites on your Home page are tracked.</p>
+    </dialog>
 
     <dialog id="bookmarks-dialog" class="dialog bookmarks-dialog" aria-labelledby="bookmarks-title">
       <div class="dialog-heading"><div><p class="eyebrow">BROWSER</p><h2 id="bookmarks-title">Bookmarks</h2></div><button class="icon-button close-dialog" aria-label="Close bookmarks">×</button></div>

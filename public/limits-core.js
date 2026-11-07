@@ -3,6 +3,8 @@
 (function (root) {
   const RULES_KEY = 'site_rules_v1';
   const USAGE_KEY = 'site_usage_v1';
+  const HISTORY_KEY = 'site_history_v1';
+  const HISTORY_DAYS = 35;
   const MINUTE = 60000;
 
   const pad = (n) => String(n).padStart(2, '0');
@@ -40,13 +42,25 @@
     return { host, name: String(card.label || host), schedule, dailyMinutes };
   }
 
+  // Every Home website gets an entry so its time can be tracked. Websites without
+  // restrictions get an empty rule that always allows; a restricted rule is never overwritten.
   function deriveRules(cards) {
     const rules = {};
     for (const card of cards || []) {
       const rule = ruleFromCard(card);
-      if (rule) rules[rule.host] = rule;
+      if (rule) { rules[rule.host] = rule; continue; }
+      const host = hostOfUrl(card?.url);
+      if (host && !rules[host]) rules[host] = { host, name: String(card.label || host), schedule: null, dailyMinutes: null };
     }
     return rules;
+  }
+
+  // Day keys for the last `count` days, newest first.
+  function lastDays(count, now = new Date()) {
+    return Array.from({ length: count }, (_, i) => {
+      const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+      return { key: dayKey(date), date };
+    });
   }
 
   // Exact host or any subdomain of a ruled host. The longest (most specific) host wins.
@@ -146,7 +160,7 @@
   }
 
   root.LimitsCore = {
-    RULES_KEY, USAGE_KEY, MINUTE, dayKey, parseTime, ruleHost, hostOfUrl, ruleFromCard, deriveRules,
+    RULES_KEY, USAGE_KEY, HISTORY_KEY, HISTORY_DAYS, lastDays, MINUTE, dayKey, parseTime, ruleHost, hostOfUrl, ruleFromCard, deriveRules,
     matchRule, inWindow, usedToday, evaluate, REASONS, formatClock, formatWhen, formatDuration, describe,
   };
 })(globalThis);

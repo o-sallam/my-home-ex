@@ -12,6 +12,7 @@ const ICONS = {
   list: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01',
   gear: 'M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4',
   bookmark: 'M6 3h12v18l-6-4-6 4z',
+  chart: 'M4 20V10M10 20V4M16 20v-8M22 20H2',
   reload: 'M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7',
 };
 
@@ -32,7 +33,7 @@ function icon(name) {
   return svg;
 }
 
-export function setupContextMenu({ isBlocked, recordOpen, setAutoSort, getState, isEditing, toggleEdit, setView, setGridSize, openBookmarks, openShortcut, removeShortcut, openSettings, notify }) {
+export function setupContextMenu({ isBlocked, recordOpen, setAutoSort, getState, isEditing, toggleEdit, setView, setGridSize, openBookmarks, openUsage, openShortcut, removeShortcut, openSettings, notify }) {
   const menu = document.querySelector('#context-menu');
 
   function hide() { menu.hidden = true; menu.replaceChildren(); }
@@ -93,6 +94,7 @@ export function setupContextMenu({ isBlocked, recordOpen, setAutoSort, getState,
     nodes.push(sep(), heading('Grid size'));
     for (const size of [3, 4, 5]) nodes.push(item(`${size} × ${size}`, { check: state.settings.gridSize === size, onClick: () => setGridSize(size) }));
     nodes.push(sep());
+    nodes.push(item('Screen time', { icon: 'chart', onClick: openUsage }));
     nodes.push(item('Bookmarks', { icon: 'bookmark', onClick: openBookmarks }));
     nodes.push(item('Tick sound', { check: soundEnabled(), onClick: () => { setSoundEnabled(!soundEnabled()); tick(); } }));
     nodes.push(item('Settings', { icon: 'gear', onClick: openSettings }));

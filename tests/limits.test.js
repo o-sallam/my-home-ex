@@ -53,3 +53,12 @@ test('usage resets with the local day and hosts match subdomains', () => {
   assert.ok(L.matchRule(rules, 'www.youtube.com'));
   assert.equal(L.matchRule(rules, 'notyoutube.com'), null);
 });
+
+test('every Home website is tracked, and an unrestricted entry never replaces a restricted one', () => {
+  const rules = L.deriveRules([{ label: 'Plain', url: 'https://plain.com/' }, { label: 'A', url: 'https://yt.com/' }, youtube, { label: 'Dup', url: 'https://www.youtube.com/watch' }]);
+  assert.equal(Object.keys(rules).sort().join(), 'plain.com,youtube.com,yt.com');
+  assert.equal(L.evaluate(rules['plain.com'], 99999, at(3)).allowed, true);
+  assert.equal(rules['youtube.com'].dailyMinutes, 15);
+  assert.equal(L.lastDays(7, at(12)).length, 7);
+  assert.equal(L.lastDays(7, at(12))[0].key, L.dayKey(at(12)));
+});

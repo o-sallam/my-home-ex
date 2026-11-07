@@ -8,6 +8,7 @@ import { websiteUrl } from './urls.js';
 import { setupContextMenu } from './contextmenu.js';
 import { setupBookmarks } from './bookmarks.js';
 import { setupTooltip } from './tooltip.js';
+import { setupUsageModal } from './usage-modal.js';
 import { sortByUsage } from './usage.js';
 
 const home = document.querySelector('#home');
@@ -147,11 +148,13 @@ async function start() {
   });
 
   const bookmarks = setupBookmarks({ notify });
+  const usageModal = L ? setupUsageModal({ storage, getState }) : { open() {} };
   setupContextMenu({
     isBlocked,
     recordOpen,
     setAutoSort: (on) => update((next) => { next.settings.autoSort = on; if (on) sortByUsage(next.cards); }),
     openBookmarks: bookmarks.open,
+    openUsage: usageModal.open,
     getState,
     isEditing: () => editMode,
     toggleEdit: () => { editMode = !editMode; render(); },

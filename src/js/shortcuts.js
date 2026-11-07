@@ -155,8 +155,8 @@ export function setupShortcuts({ getState, update, notify, getUsage = () => null
 
   async function save(card) {
     if (index === null || saving || uploading) return;
-    // Every save path (form, catalog, remove) re-checks the password if restrictions are involved.
-    if ((getState().cards[index]?.limits || card?.limits) && !(await lock.ensureUnlocked())) return;
+    // Every save path (form, catalog, remove) re-checks the password if the shortcut already has restrictions.
+    if (getState().cards[index]?.limits && !(await lock.ensureUnlocked())) return;
     saving = true;
     const target = index;
     const currentSession = session;
@@ -236,8 +236,8 @@ export function setupShortcuts({ getState, update, notify, getUsage = () => null
     showError();
     if (limitOn.checked && !limitMinutes()) limitCustom.setCustomValidity('Enter a whole number of minutes from 1 to 1440.');
     if (!form.reportValidity()) return;
-    // Changing, adding or removing restrictions always needs the password.
-    if ((getState().cards[index]?.limits || readLimits()) && !(await lock.ensureUnlocked())) return;
+    // Adding restrictions the first time is free; changing or removing existing ones needs the password.
+    if (getState().cards[index]?.limits && !(await lock.ensureUnlocked())) return;
     const saved = { ...draft, label: name.value.trim(), url: validUrl, color: color.value };
     const limits = readLimits();
     if (limits) saved.limits = limits; else delete saved.limits;
@@ -277,7 +277,7 @@ export function setupShortcuts({ getState, update, notify, getUsage = () => null
       document.querySelector('#remove-row').hidden = !existing;
       setTab(existing ? 'custom-tab' : 'catalog-tab');
       loadLimits(existing?.limits);
-      setLimitsLocked(!lock.isUnlocked());
+      setLimitsLocked(Boolean(existing?.limits) && !lock.isUnlocked());
       updatePreview();
       dialog.open();
     },

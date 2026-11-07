@@ -8,6 +8,7 @@ import { websiteUrl } from './urls.js';
 import { setupContextMenu } from './contextmenu.js';
 import { setupBookmarks } from './bookmarks.js';
 import { setupTooltip } from './tooltip.js';
+import { sortByUsage } from './usage.js';
 
 const home = document.querySelector('#home');
 const notice = document.querySelector('#notice');
@@ -44,10 +45,24 @@ async function start() {
     } finally { saving = false; }
   }
 
+  // Count an open and, if enabled, move the card up. Same-tab opens skip the redraw
+  // so the press animation isn't interrupted; the page is about to unload anyway.
+  function recordOpen(index, redraw) {
+    if (!state.cards[index]) return;
+    const next = structuredClone(state);
+    next.cards[index].opens = (next.cards[index].opens || 0) + 1;
+    next.cards[index].lastOpened = Date.now();
+    if (next.settings.autoSort) sortByUsage(next.cards);
+    state = next;
+    saveState(storage, next).catch(() => {});
+    if (redraw) render();
+  }
+
   const shortcuts = setupShortcuts({ getState, update, notify });
   const grid = createGrid({
     element: document.querySelector('#grid'),
     onEdit: shortcuts.open,
+    onOpen: recordOpen,
     onMove: async (from, to) => {
       if (from === to) return false;
       return update((next) => {
@@ -94,12 +109,15 @@ async function start() {
     const url = websiteUrl(state.cards[Number(number) - 1]?.url);
     if (!url) return;
     event.preventDefault();
+    recordOpen(Number(number) - 1, event.shiftKey);
     if (event.shiftKey) window.open(url, '_blank', 'noopener,noreferrer');
     else window.location.assign(url);
   });
 
   const bookmarks = setupBookmarks({ notify });
   setupContextMenu({
+    recordOpen,
+    setAutoSort: (on) => update((next) => { next.settings.autoSort = on; if (on) sortByUsage(next.cards); }),
     openBookmarks: bookmarks.open,
     getState,
     isEditing: () => editMode,

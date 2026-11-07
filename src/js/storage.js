@@ -45,6 +45,7 @@ export async function loadState(storage) {
         ...saved.settings,
         gridSize: [3, 4, 5].includes(saved.settings?.gridSize) ? saved.settings.gridSize : 3,
         view: saved.settings?.view === 'list' ? 'list' : 'grid',
+        autoSort: saved.settings?.autoSort !== false,
       },
     };
   }
@@ -65,7 +66,7 @@ export async function loadState(storage) {
   const state = {
     version: 2,
     cards: cards ?? structuredClone(DEFAULT_CARDS),
-    settings: { gridSize: 3, view: view === 'list' ? 'list' : 'grid' },
+    settings: { gridSize: 3, view: view === 'list' ? 'list' : 'grid', autoSort: true },
   };
   if (cards !== undefined || view !== undefined) await storage.set(STATE_KEY, state);
   return state;

@@ -32,7 +32,7 @@ function icon(name) {
   return svg;
 }
 
-export function setupContextMenu({ getState, isEditing, toggleEdit, setView, setGridSize, openBookmarks, openShortcut, removeShortcut, openSettings, notify }) {
+export function setupContextMenu({ recordOpen, setAutoSort, getState, isEditing, toggleEdit, setView, setGridSize, openBookmarks, openShortcut, removeShortcut, openSettings, notify }) {
   const menu = document.querySelector('#context-menu');
 
   function hide() { menu.hidden = true; menu.replaceChildren(); }
@@ -70,8 +70,8 @@ export function setupContextMenu({ getState, isEditing, toggleEdit, setView, set
     const nodes = [];
     if (card) {
       if (url) {
-        nodes.push(item('Open', { icon: 'open', key: cellIndex < 9 ? String(cellIndex + 1) : '', onClick: () => window.location.assign(url) }));
-        nodes.push(item('Open in new tab', { icon: 'tab', key: cellIndex < 9 ? `Shift+${cellIndex + 1}` : '', onClick: () => window.open(url, '_blank', 'noopener,noreferrer') }));
+        nodes.push(item('Open', { icon: 'open', key: cellIndex < 9 ? String(cellIndex + 1) : '', onClick: () => { recordOpen(cellIndex, false); window.location.assign(url); } }));
+        nodes.push(item('Open in new tab', { icon: 'tab', key: cellIndex < 9 ? `Shift+${cellIndex + 1}` : '', onClick: () => { recordOpen(cellIndex, true); window.open(url, '_blank', 'noopener,noreferrer'); } }));
         nodes.push(item('Copy link', { icon: 'copy', onClick: () => navigator.clipboard?.writeText(url).then(() => notify('Link copied.'), () => notify('Could not copy the link.')) }));
         nodes.push(sep());
       }
@@ -86,6 +86,7 @@ export function setupContextMenu({ getState, isEditing, toggleEdit, setView, set
     nodes.push(sep(), heading('View'));
     nodes.push(item('Grid view', { check: state.settings.view === 'grid', onClick: () => setView('grid') }));
     nodes.push(item('List view', { check: state.settings.view === 'list', onClick: () => setView('list') }));
+    nodes.push(item('Most used first', { check: state.settings.autoSort, onClick: () => setAutoSort(!state.settings.autoSort) }));
     nodes.push(sep(), heading('Grid size'));
     for (const size of [3, 4, 5]) nodes.push(item(`${size} × ${size}`, { check: state.settings.gridSize === size, onClick: () => setGridSize(size) }));
     nodes.push(sep());

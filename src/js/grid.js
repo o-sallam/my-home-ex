@@ -2,7 +2,7 @@ import { createIcon } from './icons.js';
 import { websiteUrl, hostname } from './urls.js';
 import { tick, pop } from './sound.js';
 
-export function createGrid({ element, onEdit, onMove }) {
+export function createGrid({ element, onEdit, onMove, onOpen }) {
   let dragIndex = null;
   let editMode = false;
   let columns = 3;
@@ -39,7 +39,7 @@ export function createGrid({ element, onEdit, onMove }) {
       let tip = name; let tipSub = ''; let tipKey = '';
       if (blocked) { tip = card ? name : 'Empty slot'; tipSub = card ? 'No link yet. Turn on edit mode to set one.' : 'Turn on edit mode to add a shortcut'; }
       else if (editing) { tip = card ? `Edit ${name}` : 'Add a shortcut'; tipSub = card ? domain : `Cell ${i + 1}`; }
-      else { tipSub = domain; tipKey = i < 9 ? String(i + 1) : ''; }
+      else { tipSub = card?.opens ? `${domain} · opened ${card.opens}×` : domain; tipKey = i < 9 ? String(i + 1) : ''; }
       cell.dataset.tip = tip; cell.dataset.tipSub = tipSub; cell.dataset.tipKey = tipKey;
       if (card) {
         const well = document.createElement('span');
@@ -101,7 +101,9 @@ export function createGrid({ element, onEdit, onMove }) {
     pop();
     ripple(cell, event);
     if (!url) { onEdit(Number(cell.dataset.index)); return; }
-    if (event.ctrlKey || event.metaKey || event.shiftKey) { window.open(url, '_blank', 'noopener,noreferrer'); return; }
+    const index = Number(cell.dataset.index);
+    if (event.ctrlKey || event.metaKey || event.shiftKey) { onOpen(index, true); window.open(url, '_blank', 'noopener,noreferrer'); return; }
+    onOpen(index, false);
     // Let the press animation play before the page changes.
     cell.style.setProperty('--icon-color', cell.querySelector('.brand-icon')?.style.getPropertyValue('--icon-color') || '#3794ff');
     cell.classList.add('launching');
@@ -112,6 +114,7 @@ export function createGrid({ element, onEdit, onMove }) {
     const url = event.button === 1 ? event.target.closest('.cell')?.dataset.url : null;
     if (!url) return;
     event.preventDefault();
+    onOpen(Number(event.target.closest('.cell').dataset.index), true);
     window.open(url, '_blank', 'noopener,noreferrer');
   });
   element.addEventListener('dragstart', (event) => {

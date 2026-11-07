@@ -1,9 +1,13 @@
 import { setupDialog } from './dialogs.js';
+import { sortByUsage } from './usage.js';
 
 export function setupSettings({ getState, update }) {
   const dialog = setupDialog(document.querySelector('#settings-dialog'));
   const options = document.querySelector('#grid-options');
+  const autoSort = document.querySelector('#auto-sort');
+  autoSort.addEventListener('change', () => update((state) => { state.settings.autoSort = autoSort.checked; if (autoSort.checked) sortByUsage(state.cards); }));
   document.querySelector('#settings-open').addEventListener('click', () => {
+    autoSort.checked = getState().settings.autoSort;
     options.querySelector(`input[value="${getState().settings.gridSize}"]`).checked = true;
     dialog.open();
   });

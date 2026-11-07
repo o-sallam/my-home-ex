@@ -6,7 +6,9 @@
   "description": "A quiet home for your favorite websites. Customizable shortcuts, entirely yours.",
   "permissions": [
     "storage",
-    "offscreen"
+    "offscreen",
+    "bookmarks",
+    "favicon"
   ],
   "chrome_url_overrides": {
     "newtab": "index.html"

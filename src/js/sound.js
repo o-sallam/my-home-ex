@@ -17,7 +17,7 @@ export function tick() { blip('tick', 1900, 1200, 0.045, 0.06, 35); }
 export function pop() { blip('pop', 900, 380, 0.09, 0.09, 0); }
 
 async function blip(kind, from, to, length, volume, gap) {
-  if (!soundEnabled()) return;
+  if (!soundEnabled() || document.body.classList.contains('intro')) return;
   const now = performance.now();
   if (now - last < gap) return;
   last = now;

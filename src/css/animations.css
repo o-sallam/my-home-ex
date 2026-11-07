@@ -22,7 +22,7 @@ body.intro .splash { display: flex; animation: splash-out 520ms cubic-bezier(.6,
 .splash svg { overflow: visible; animation: splash-glow 1400ms ease-out 200ms both; }
 .sq { transform-box: fill-box; transform-origin: center; animation: sq-in 560ms var(--ease) both; }
 .sq1 { animation-delay: 150ms; } .sq2 { animation-delay: 260ms; } .sq4 { animation-delay: 370ms; } .sq3 { animation-delay: 480ms; }
-body.intro .page-header, body.intro .page-footer { animation: rise 600ms var(--ease) 1700ms both; }
+body.intro .page-header, body.intro .page-footer, body.intro .fab { animation: rise 600ms var(--ease) 1700ms both; }
 body.intro .grid .cell { animation: cell-reveal 640ms var(--ease) both; animation-delay: calc(1750ms + var(--i, 0) * 55ms); }
 @keyframes sq-in { from { opacity: 0; transform: scale(.2) rotate(-25deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
 @keyframes splash-glow { 0%, 100% { filter: drop-shadow(0 0 0 #3794ff00); } 50% { filter: drop-shadow(0 0 18px #3794ff66); } }

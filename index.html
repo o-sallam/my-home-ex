@@ -31,7 +31,16 @@
         <div id="grid" class="grid" aria-label="Shortcuts"></div>
       </section>
     </main>
+    <button id="bookmarks-open" class="fab" aria-haspopup="dialog" aria-label="Browser bookmarks" title="Bookmarks" hidden>
+      <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>
+    </button>
     <footer class="page-footer"><div class="footer-left"><p id="edit-help" class="edit-help" hidden>Choose a shortcut to edit. Drag to reorder, or focus a cell and use Alt + arrow keys.</p><p id="keyboard-hint"><kbd>1</kbd>–<kbd>9</kbd><span> to open · </span><kbd>Shift</kbd><span> for a new tab</span></p></div><span id="grid-summary">3 × 3 grid</span></footer>
+
+    <dialog id="bookmarks-dialog" class="dialog bookmarks-dialog" aria-labelledby="bookmarks-title">
+      <div class="dialog-heading"><div><p class="eyebrow">BROWSER</p><h2 id="bookmarks-title">Bookmarks</h2></div><button class="icon-button close-dialog" aria-label="Close bookmarks">×</button></div>
+      <label class="bm-search"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input id="bookmarks-search" type="search" placeholder="Search bookmarks" autocomplete="off" aria-label="Search bookmarks"><span id="bookmarks-count" class="bm-count"></span></label>
+      <div id="bookmarks-list" class="bm-list"></div>
+    </dialog>
 
     <dialog id="settings-dialog" class="dialog settings-dialog" aria-labelledby="settings-title">
       <div class="dialog-heading"><div><p class="eyebrow">MAKE IT YOURS</p><h2 id="settings-title">Homepage settings</h2></div><button class="icon-button close-dialog" aria-label="Close settings">×</button></div>

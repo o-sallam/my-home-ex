@@ -6,6 +6,7 @@ import { setupSettings } from './settings.js';
 import { setupShortcuts } from './shortcuts.js';
 import { websiteUrl } from './urls.js';
 import { setupContextMenu } from './contextmenu.js';
+import { setupBookmarks } from './bookmarks.js';
 
 const home = document.querySelector('#home');
 const notice = document.querySelector('#notice');
@@ -94,7 +95,9 @@ async function start() {
     else window.location.assign(url);
   });
 
+  const bookmarks = setupBookmarks({ notify });
   setupContextMenu({
+    openBookmarks: bookmarks.open,
     getState,
     isEditing: () => editMode,
     toggleEdit: () => { editMode = !editMode; render(); },

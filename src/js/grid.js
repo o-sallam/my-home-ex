@@ -35,7 +35,12 @@ export function createGrid({ element, onEdit, onMove }) {
       if (card && !editing && url) { cell.dataset.url = url; cell.setAttribute('role', 'link'); }
       const name = card ? String(card.label || 'Untitled shortcut') : 'Add shortcut';
       cell.setAttribute('aria-label', blocked ? `${card ? name : 'Empty'}, no link, cell ${i + 1}` : card ? `${editing || !url ? 'Edit ' : ''}${name}, cell ${i + 1}` : `Add shortcut to cell ${i + 1}`);
-      cell.title = blocked ? (card ? 'No link yet. Turn on edit mode to set one.' : 'Empty. Turn on edit mode to add a shortcut.') : card ? (editing ? `Edit ${name}` : url ? name : 'Update this shortcut with an http:// or https:// URL') : 'Add a shortcut';
+      const domain = card ? hostname(card.url) : '';
+      let tip = name; let tipSub = ''; let tipKey = '';
+      if (blocked) { tip = card ? name : 'Empty slot'; tipSub = card ? 'No link yet. Turn on edit mode to set one.' : 'Turn on edit mode to add a shortcut'; }
+      else if (editing) { tip = card ? `Edit ${name}` : 'Add a shortcut'; tipSub = card ? domain : `Cell ${i + 1}`; }
+      else { tipSub = domain; tipKey = i < 9 ? String(i + 1) : ''; }
+      cell.dataset.tip = tip; cell.dataset.tipSub = tipSub; cell.dataset.tipKey = tipKey;
       if (card) {
         const well = document.createElement('span');
         well.className = 'icon-well';

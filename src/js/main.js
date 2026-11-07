@@ -7,6 +7,7 @@ import { setupShortcuts } from './shortcuts.js';
 import { websiteUrl } from './urls.js';
 import { setupContextMenu } from './contextmenu.js';
 import { setupBookmarks } from './bookmarks.js';
+import { setupTooltip } from './tooltip.js';
 
 const home = document.querySelector('#home');
 const notice = document.querySelector('#notice');
@@ -55,6 +56,8 @@ async function start() {
       });
     },
   });
+
+  setupTooltip(document.querySelector('#grid'));
 
   function render() {
     grid.render(state, editMode);
